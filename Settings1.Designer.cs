@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TwitchSnitch {
+namespace TwitchBot {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

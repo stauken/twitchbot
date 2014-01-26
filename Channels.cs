@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TwitchSnitch
+namespace TwitchBot
 {
     public class Channels
     {
@@ -23,5 +23,32 @@ namespace TwitchSnitch
         public bool UseWhiteList = false;
         public bool UseBlackList = false;
         public DateTime LastLiveAllMessage = DateTime.Now.AddMinutes(-3);
+        // Check against white/black lists or return true if neither are enabled
+        public bool MeetsWhiteBlackList(TwitchStuff StreamInfo)
+        {
+            bool meetswhitelist = false;
+            if (this.UseWhiteList)
+            {
+                meetswhitelist = true;
+                foreach (string s in this.WhiteList)
+                {
+                    if (StreamInfo.game.Contains(s))
+                        meetswhitelist = true;
+                }
+            }
+            if (this.UseBlackList)
+            {
+                foreach (string s in this.BlackList)
+                {
+                    if (StreamInfo.game.Contains(s))
+                        meetswhitelist = false;
+                }
+            }
+            if (!this.UseBlackList && !this.UseWhiteList)
+            {
+                meetswhitelist = true;
+            }
+            return meetswhitelist;
+        }
     }
 }

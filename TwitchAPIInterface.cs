@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using System.Net;
 using System.Web;
 
-namespace TwitchSnitch
+namespace TwitchBot
 {
     public class TwitchAPIInterface
     {
