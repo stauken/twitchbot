@@ -28,8 +28,7 @@ namespace TwitchBot
         {
             bool meetswhitelist = false;
             if (this.UseWhiteList)
-            {
-                meetswhitelist = true;
+            {                
                 foreach (string s in this.WhiteList)
                 {
                     if (StreamInfo.game.Contains(s))

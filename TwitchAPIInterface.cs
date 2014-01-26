@@ -40,10 +40,11 @@ namespace TwitchBot
             }
             catch (WebException webEx)
             {
-
+                Data = JObject.Parse("{\"stream\": null}");
             }
             catch (Exception ex)
             {
+                Data = JObject.Parse("{\"stream\": null}");
                 return "false";
             }
             finally

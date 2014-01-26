@@ -175,11 +175,9 @@ namespace TwitchBot
                             string streamviewers = "";
                             string streamgame = "";
                             streamInfo.lastrefresh = DateTime.Now;
-                            bool foundstream = false;
                             string test = getInfo.Data["stream"].ToString();
-                            if (test != "")
+                            if (!String.IsNullOrWhiteSpace(test))
                             {
-                                foundstream = true;
                                 streamname = getInfo.Data["stream"]["channel"]["status"].ToString();
                                 streamviewers = getInfo.Data["stream"]["viewers"].ToString();
                                 streamgame = getInfo.Data["stream"]["game"].ToString();
@@ -198,7 +196,8 @@ namespace TwitchBot
                                         {
                                             addToList = channel.LiveMessage.Trim();
                                         }
-                                        else{
+                                        else
+                                        {
                                             addToList = LiveMessage.Trim();
                                         }
                                         addToList = TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
@@ -230,15 +229,16 @@ namespace TwitchBot
                                         }
                                         streamInfo.lastannounce = DateTime.Now;
                                     }
+
                                 }
-                            }
-                            else
-                            {
-                                streamInfo.streamerviewcount = "";
-                                streamInfo.streamname = "";
-                                streamInfo.lastrefresh = DateTime.Now;
-                                streamInfo.game = "";
-                                streamInfo.streamerlive = "false";
+                                else
+                                {
+                                    streamInfo.streamerviewcount = "";
+                                    streamInfo.streamname = "";
+                                    streamInfo.lastrefresh = DateTime.Now;
+                                    streamInfo.game = "";
+                                    streamInfo.streamerlive = "false";
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -246,7 +246,7 @@ namespace TwitchBot
 
                         }
                     }
-                }
+                }                
             }
         }
         public static void LoginLoop()
@@ -485,7 +485,7 @@ namespace TwitchBot
                 string liveList = "";
                 foreach (TwitchStuff streamInfo in channel.StreamInfo)
                 {
-                    bool meetswhitelist = true;
+                    bool meetswhitelist = false;
                     if (streamInfo.streamerlive == "true")
                     {
                         string addToList = LiveMessage;
@@ -575,25 +575,33 @@ namespace TwitchBot
             Channels Channel = new Channels();
             bool foundchannel = false;
             string[] cmdargs = e.Text.Split(' ');
-            if (cmdargs.Length <= 1 && cmdargs[0] != "help")
+            if (cmdargs.Length <= 1 && (cmdargs[0] != "help" && cmdargs[0] != "listchannels"))
             {
-                ircConnection.LocalUser.SendMessage(e.Source.Name, "Proper message format is .");
+                ircConnection.LocalUser.SendMessage(e.Source.Name, String.Format("Try /msg {0} help", BotInfo.NickName));
             }
             else if (cmdargs[0] == "help")
             {
                 List<string> helpMsg = new List<string>();
                 helpMsg.Add("TwitchBot channel commands:");
-                helpMsg.Add("  !live - Retrieves all streaming users who meet any requirements to be shown to the channel");
+                helpMsg.Add("  !live - Retrieves all streaming users who meet any requirements to be shown to the channel.");
                 helpMsg.Add("  !liveall - Retrieves all streaming users on the list, period.");
                 helpMsg.Add("  !add - Ops only, will allow you to add a user to the channel's watchlist.");
                 helpMsg.Add("PM commands:");
                 helpMsg.Add(String.Format("  /msg {0} live #channel - Gets all live users for a watched channel that meet requirements to be listed.", BotInfo.NickName));
                 helpMsg.Add(String.Format("  /msg {0} liveall #channel - Gets all live users for a watched channel.", BotInfo.NickName));
+                helpMsg.Add(String.Format("  /msg {0} listchannels - Gets all channels being watched.", BotInfo.NickName));
                 foreach (string s in helpMsg)
                 {
                     ircConnection.LocalUser.SendMessage(e.Source.Name, s);
                 }
 
+            }
+            else if (cmdargs[0] == "listchannels")
+            {
+                foreach (Channels c in TwitchChannels)
+                {
+                    ircConnection.LocalUser.SendMessage(e.Source.Name, c.ChannelName);
+                }                
             }
             else
             {
@@ -624,7 +632,7 @@ namespace TwitchBot
                             {
                                 ircConnection.LocalUser.SendMessage(e.Source.Name, s);
                             }
-                            break;
+                            break;                                                    
                         default:
                             break;
                     }
@@ -874,6 +882,7 @@ namespace TwitchBot
                 XElement serversubnode = serversNode.Elements("streamannouncement").FirstOrDefault();
                 BaseMessageStartStreaming = serversubnode.Attribute("value").Value.ToString();
                 ChangeMessage = serversNode.Elements("titlechangeannouncement").FirstOrDefault().Attribute("value").Value.ToString();
+                string test = "";
                 foreach (XElement channelNode in serverNode.Descendants("channel"))
                 {
                     valuecheck = "";
@@ -920,7 +929,7 @@ namespace TwitchBot
                     channelMonitor.ChannelName = channelNode.Attribute("id").Value;
                     try
                     {
-                        string test = channelNode.Attribute("usewhitelist").Value.ToString();
+                        valuecheck = channelNode.Attribute("usewhitelist").Value.ToString();
                         channelMonitor.UseWhiteList = Convert.ToBoolean(channelNode.Attribute("usewhitelist").Value.ToString());
                     }//try
                     catch
@@ -966,17 +975,18 @@ namespace TwitchBot
                             channelMonitor.BlackList.Add(gamename);
                         }//foreach (XElement BlackListitem in blackListInfo.Elements("game").DefaultIfEmpty())
                     }//if (blackListInfo != null)
-
+                    
                     foreach (XElement streamer in channelNode.Elements("streamers").Elements("streamer").ToList())
                     {
+                        test = "";
                         try
-                        {
+                        {                            
                             string twitchid = streamer.Attribute("value").Value.ToString();
                             StreamInfo = new TwitchStuff();
                             Streamers.Add(twitchid);
                             if (checkTwitch.GetResponse(twitchid) != "false")
                             {
-                                string test = checkTwitch.Data["stream"].ToString();
+                                test = checkTwitch.Data["stream"].ToString();
                                 if (test != "")
                                 {
 
