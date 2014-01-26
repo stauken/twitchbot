@@ -453,13 +453,35 @@ namespace TwitchBot
             }
             return listmessages;
         }
-        public static void SendLiveList(Channels channel)
+        public static void SendLiveList(Channels channel, string nick)
         {
             bool foundstream = false;
             bool foundunapprovedstream = false;
-            if (channel.LastLiveAnnouncement.AddSeconds(60) <= DateTime.Now)
+            int livestreams = 0;
+            foreach (TwitchStuff streamInfo in channel.StreamInfo)
             {
-                channel.LastLiveAnnouncement = DateTime.Now;
+                if (streamInfo.streamerlive == "true")
+                {
+                    livestreams++;
+                }
+            }
+            bool announcetochannel = true;
+            if (livestreams >= 3)
+            {
+                announcetochannel = false;
+
+            }
+            int timecheck = 60;
+            if (!announcetochannel)
+            {
+                timecheck = 5;
+            }
+            if (channel.LastLiveAnnouncement.AddSeconds(timecheck) <= DateTime.Now)
+            {
+                if (announcetochannel)
+                {
+                    channel.LastLiveAnnouncement = DateTime.Now;
+                }
                 string liveList = "";
                 foreach (TwitchStuff streamInfo in channel.StreamInfo)
                 {
@@ -476,7 +498,10 @@ namespace TwitchBot
                         if (meetswhitelist)
                         {
                             foundstream = true;
-                            ircConnection.LocalUser.SendMessage(channel.ChannelName, liveList);
+                            if(announcetochannel)
+                                ircConnection.LocalUser.SendMessage(channel.ChannelName, liveList);
+                            else
+                                ircConnection.LocalUser.SendMessage(nick, liveList);
                         }
                         else
                         {
@@ -499,7 +524,7 @@ namespace TwitchBot
                         ircConnection.LocalUser.SendMessage(channel.ChannelName, "No one is currently streaming.");
                     }
                 }
-            }
+            }            
         }
         #region Events
 
@@ -656,7 +681,7 @@ namespace TwitchBot
                         if (target.Name == c.ChannelName)
                             CurChan = c;
                     }
-                    SendLiveList(CurChan);
+                    SendLiveList(CurChan,e.Source.Name);
                 }
                 if (e.Text.StartsWith(".transform") && LastTransform.AddSeconds(15) < DateTime.Now)
                 {
