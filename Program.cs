@@ -550,12 +550,29 @@ namespace TwitchBot
             Channels Channel = new Channels();
             bool foundchannel = false;
             string[] cmdargs = e.Text.Split(' ');
-            if (cmdargs.Length <= 1)
+            if (cmdargs.Length <= 1 && cmdargs[0] != "help")
             {
                 ircConnection.LocalUser.SendMessage(e.Source.Name, "Proper message format is .");
             }
+            else if (cmdargs[0] == "help")
+            {
+                List<string> helpMsg = new List<string>();
+                helpMsg.Add("TwitchBot channel commands:");
+                helpMsg.Add("  !live - Retrieves all streaming users who meet any requirements to be shown to the channel");
+                helpMsg.Add("  !liveall - Retrieves all streaming users on the list, period.");
+                helpMsg.Add("  !add - Ops only, will allow you to add a user to the channel's watchlist.");
+                helpMsg.Add("PM commands:");
+                helpMsg.Add(String.Format("  /msg {0} live #channel - Gets all live users for a watched channel that meet requirements to be listed.", BotInfo.NickName));
+                helpMsg.Add(String.Format("  /msg {0} liveall #channel - Gets all live users for a watched channel.", BotInfo.NickName));
+                foreach (string s in helpMsg)
+                {
+                    ircConnection.LocalUser.SendMessage(e.Source.Name, s);
+                }
+
+            }
             else
             {
+
                 foreach (Channels c in TwitchChannels)
                 {
                     if (c.ChannelName == cmdargs[1])
