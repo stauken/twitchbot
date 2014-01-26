@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<servers>
+  <server id="irc2.speedrunslive.com" port="6667">
+    <userinfo>
+      <nick>Nickforbot</nick>
+      <name>Nameforbot</name>
+	  <!-- server password does not yet work, user password will automatically identify the bot if the bots nick is registered -->
+      <needsserverpassword>False</needsserverpassword>
+      <serverpassword></serverpassword>
+      <userpassword></userpassword>
+    </userinfo>
+    <channel id="#twitchbottest" usewhitelist="false" useblacklist="false">
+		<!-- Example of custom messages -->
+	    <streamannouncement value="$6http://www.twitch.tv/$n $xis now streaming $10$t$x (game: $3$g$x) test " />
+		<liveannouncement value="$3http://www.twitch.tv/$n $xis now streaming $10$t$x (viewers: $11$v$x) test" />
+		<titlechangeannouncement value="$8http://www.twitch.tv/$n $xhas changed their stream title, now $10$t $x(game: $3$g$x, viewers: $11$v$x) test"/>
+		<!-- example of streamer watchlist -->
+		<streamers>
+			<streamer value="saltybet" />
+			<streamer value="speeddemosarchivesda" />
+			<streamer value="dansgaming" />        
+		</streamers>
+		<!-- Race watching -->
+		<races>
+			<race name="Kirby" />
+			<race name="Super Mario Land 2" />
+			<race name="Grand Theft Auto IV" />
+			<race name="Teenage Mutant Ninja Turtles" />
+		</races>
+		<!-- black list (Watches stream title and gamename) -->
+		<blacklist>
+			<game name="[nosrl]" />
+		</blacklist>
+		<!-- uses game name only -->
+		<whitelist>
+			<game name="Grand Theft Auto" />
+		</whitelist>		
+    </channel>
+  </server>
+	<!-- currently unused-->
+	<announcementwait value="30"></announcementwait>
+	<!-- default announcement messages are used if no channel message is available -->
+	<streamannouncement value="$6http://www.twitch.tv/$n $xis now streaming $10$t$x (game: $3$g$x)" />
+	<liveannouncement value="$3http://www.twitch.tv/$n $xis now streaming $10$t$x (viewers: $11$v$x)" />
+	<titlechangeannouncement value="$8http://www.twitch.tv/$n $xhas changed their stream title, now $10$t $x(game: $3$g$x, viewers: $11$v$x)"/>
+	<!-- global blacklist is currently unused -->
+	<blacklist>
+		<word value="[nosrl]" />
+		<word value="test" />
+	</blacklist>
+</servers>
