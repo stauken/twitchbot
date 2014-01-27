@@ -183,11 +183,11 @@ namespace TwitchBot
                                 streamgame = getInfo.Data["stream"]["game"].ToString();
                                 streamInfo.streamerviewcount = streamviewers;
                                 streamInfo.lastrefresh = DateTime.Now;
-                                if (streamname != streamInfo.streamname && streamgame != streamInfo.game)
+                                string addToList = "";
+                                if (streamname == streamInfo.streamname && streamgame == streamInfo.game)
                                 {
                                     streamInfo.streamname = streamname;
-                                    streamInfo.game = streamgame;
-                                    string addToList = "";
+                                    streamInfo.game = streamgame;                                    
                                     if (streamInfo.streamerlive == "false")
                                     {
                                         // handle announce message
@@ -195,51 +195,54 @@ namespace TwitchBot
                                         if (channel.LiveMessage != "")
                                         {
                                             addToList = channel.LiveMessage.Trim();
-                                        }
+                                        }//if (channel.LiveMessage != "")
                                         else
                                         {
                                             addToList = LiveMessage.Trim();
-                                        }
+                                        }//else
                                         addToList = TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
                                         bool meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
                                         if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
                                         {
                                             if (meetswhitelist)
                                                 ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
-                                        }
+                                        }//if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
                                         streamInfo.lastannounce = DateTime.Now;
-                                    }
-                                    else
-                                    {
-                                        // handle change of stream title message
-                                        bool changesmeetwhitelist = channel.MeetsWhiteBlackList(streamInfo);
-                                        if (changesmeetwhitelist)
-                                        {
-                                            if (channel.ChangedMessage != "")
-                                            {
-                                                addToList = channel.ChangedMessage;
-                                            }
-                                            else
-                                            {
-
-                                                addToList = ChangeMessage.Trim();
-                                            }
-                                            addToList = TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
-                                            ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
-                                        }
-                                        streamInfo.lastannounce = DateTime.Now;
-                                    }
-
-                                }
+                                    }//if (streamInfo.streamerlive == "false")
+                                }//if (streamname == streamInfo.streamname && streamgame == streamInfo.game)
                                 else
                                 {
-                                    streamInfo.streamerviewcount = "";
-                                    streamInfo.streamname = "";
-                                    streamInfo.lastrefresh = DateTime.Now;
-                                    streamInfo.game = "";
-                                    streamInfo.streamerlive = "false";
-                                }
-                            }
+                                    streamInfo.streamname = streamname;
+                                    streamInfo.game = streamgame;                                    
+                                    // handle change of stream title message
+                                    bool changesmeetwhitelist = channel.MeetsWhiteBlackList(streamInfo);
+                                    if (changesmeetwhitelist)
+                                    {
+                                        if (channel.ChangedMessage != "")
+                                        {
+                                            addToList = channel.ChangedMessage;
+                                        }//if (channel.ChangedMessage != "")
+                                        else
+                                        {
+
+                                            addToList = ChangeMessage.Trim();
+                                        }//else
+                                        addToList = TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
+                                        ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
+                                    }//if (changesmeetwhitelist)
+                                    streamInfo.lastannounce = DateTime.Now;
+                                }//else
+
+                            }//if (!String.IsNullOrWhiteSpace(test))
+                            else
+                            {
+                                streamInfo.streamerviewcount = "";
+                                streamInfo.streamname = "";
+                                streamInfo.lastrefresh = DateTime.Now;
+                                streamInfo.game = "";
+                                streamInfo.streamerlive = "false";
+                            }//else
+
                         }
                         catch (Exception ex)
                         {
