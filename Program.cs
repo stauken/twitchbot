@@ -175,42 +175,42 @@ namespace TwitchBot
                             string streamviewers = "";
                             string streamgame = "";
                             streamInfo.lastrefresh = DateTime.Now;
+                            // get the info for the 'stream' field
                             string test = getInfo.Data["stream"].ToString();
+                            // null means there is no stream
                             if (!String.IsNullOrWhiteSpace(test))
                             {
+                                // set the new info
                                 streamname = getInfo.Data["stream"]["channel"]["status"].ToString();
                                 streamviewers = getInfo.Data["stream"]["viewers"].ToString();
                                 streamgame = getInfo.Data["stream"]["game"].ToString();
                                 streamInfo.streamerviewcount = streamviewers;
                                 streamInfo.lastrefresh = DateTime.Now;
                                 string addToList = "";
-                                if (streamname == streamInfo.streamname && streamgame == streamInfo.game)
+                                if (streamInfo.streamerlive == "false")
                                 {
+                                    // handle announce message
                                     streamInfo.streamname = streamname;
-                                    streamInfo.game = streamgame;                                    
-                                    if (streamInfo.streamerlive == "false")
+                                    streamInfo.game = streamgame;                                                                    
+                                    streamInfo.streamerlive = "true";
+                                    if (channel.LiveMessage != "")
                                     {
-                                        // handle announce message
-                                        streamInfo.streamerlive = "true";
-                                        if (channel.LiveMessage != "")
-                                        {
-                                            addToList = channel.LiveMessage.Trim();
-                                        }//if (channel.LiveMessage != "")
-                                        else
-                                        {
-                                            addToList = LiveMessage.Trim();
-                                        }//else
-                                        addToList = TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
-                                        bool meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
-                                        if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
-                                        {
-                                            if (meetswhitelist)
-                                                ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
-                                        }//if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
-                                        streamInfo.lastannounce = DateTime.Now;
-                                    }//if (streamInfo.streamerlive == "false")
-                                }//if (streamname == streamInfo.streamname && streamgame == streamInfo.game)
-                                else
+                                        addToList = channel.LiveMessage.Trim();
+                                    }//if (channel.LiveMessage != "")
+                                    else
+                                    {
+                                        addToList = LiveMessage.Trim();
+                                    }//else
+                                    addToList = TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
+                                    bool meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
+                                    if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
+                                    {
+                                        if (meetswhitelist)
+                                            ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
+                                    }//if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
+                                    streamInfo.lastannounce = DateTime.Now;
+                                }//if (streamInfo.streamerlive == "false")
+                                else if (streamname != streamInfo.streamname || streamgame != streamInfo.game)
                                 {
                                     streamInfo.streamname = streamname;
                                     streamInfo.game = streamgame;                                    
@@ -236,6 +236,7 @@ namespace TwitchBot
                             }//if (!String.IsNullOrWhiteSpace(test))
                             else
                             {
+                                // flag stream as getting no report
                                 streamInfo.streamerviewcount = "";
                                 streamInfo.streamname = "";
                                 streamInfo.lastrefresh = DateTime.Now;
@@ -376,8 +377,7 @@ namespace TwitchBot
                 channel.LastLiveAllMessage = DateTime.Now;
                 string liveList = "";
                 foreach (TwitchStuff streamInfo in channel.StreamInfo)
-                {
-                    bool meetswhitelist = true;
+                {                    
                     if (streamInfo.streamerlive == "true")
                     {
                         string addToList = LiveMessage;
@@ -387,12 +387,8 @@ namespace TwitchBot
                         }
                         addToList = TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
                         liveList = addToList.Trim();
-                        meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
-                        if (meetswhitelist)
-                        {
-                            foundstream = true;
-                            ircConnection.LocalUser.SendMessage(e.Name, liveList);
-                        }
+                        foundstream = true;
+                        ircConnection.LocalUser.SendMessage(e.Name, liveList);
 
                         liveList = "";
                     }
