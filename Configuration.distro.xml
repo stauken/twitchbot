@@ -1,0 +1,44 @@
+﻿<servers>
+  <server id="irc.server.com" port="6667">
+    <userinfo>
+      <nick>twitchbotdistro</nick>
+      <name>twitchbotdistro</name>
+      <needsserverpassword>False</needsserverpassword>
+      <serverpassword></serverpassword>
+      <userpassword></userpassword>
+    </userinfo>
+    <channel id="#test-channel1" useblacklist="true" usewhitelist="false">
+      <streamers>
+        <streamer value="riotgames" />
+        <streamer value="saltybet" />
+        <streamer value="spikevegeta" />
+        <streamer value="cosmowright" />
+        <streamer value="dansgaming" />
+        <streamer value="teamsp00ky" />
+        <streamer value="adam_ak" />
+      </streamers>
+      <whitelist>
+        <game name="M.U.G.E.N" />
+        <game name="Zelda" />
+        <game name="League of Legends" />
+        <game name="Grand Theft Auto" />          
+      </whitelist>
+      <blacklist>
+        <game name="[nosrl]" />
+        <game name="Tekken" />
+        <game name="Injustice" />
+        <game name="Commander Keen" />          
+      </blacklist>
+      <races>
+        <race name="Grand Theft Auto" />
+      </races>              
+      <streamannouncement value="$4http://www.twitch.tv/$n $xis now streaming $10$t$x (game: $3$g$x, viewers: $11$v$x) " />
+      <liveannouncement value="$4http://www.twitch.tv/$n $xis now streaming $10$t$x (game: $3$g$x, viewers: $11$v$x)" />
+      <titlechangeannouncement value="$4http://www.twitch.tv/$n $xhas changed their stream title, now $10$t $x(game: $3$g$x, viewers: $1$v$x)" />
+    </channel>
+  </server>
+  <announcementwait value="30"></announcementwait>
+  <streamannouncement value="$4http://www.twitch.tv/$n $xis now streaming $10$t$x (game: $3$g$x, viewers: $11$v$x) " />
+  <liveannouncement value="$4http://www.twitch.tv/$n $xis now streaming $10$t$x (game: $3$g$x, viewers: $11$v$x)" />
+  <titlechangeannouncement value="$4http://www.twitch.tv/$n $xhas changed their stream title, now $10$t $x(game: $3$g$x, viewers: $1$v$x)" />
+</servers>

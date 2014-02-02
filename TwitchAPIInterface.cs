@@ -12,15 +12,19 @@ namespace TwitchBot
 {
     public class TwitchAPIInterface
     {
+        public Dictionary<string, string> LastUpdateForStreamer = new Dictionary<string, string>();
         public string MostRecentResponse = null;
-        public string StreamName = "";
-        public string StreamTitle = "";
-        public string StreamGame = "";
-        public string StreamStart = "";
+        public string StreamName = String.Empty;
+        public string StreamTitle = String.Empty;
+        public string StreamGame = String.Empty;
+        public string StreamStart = String.Empty;
+        public String Error = String.Empty;
+        public int catalogupdateinterval = 30;
         public JObject Data;
         public string GetResponse(string username)
         {
-            string apiResponse = "";
+     
+            string apiResponse = String.Empty;
             WebRequest httpWR = WebRequest.Create(String.Format("https://api.twitch.tv/kraken/streams/{0}?client_id=orxfsw5hp13j70u47drvhhgux7vhhhj", username));
             httpWR.Timeout = 5000;
             //httpWR.ContentType = "application/x-www-form-urlencoded";
@@ -32,19 +36,34 @@ namespace TwitchBot
             try
             {
                 WebResponse httpResponse = httpWR.GetResponse();
-                httpResponse = httpWR.GetResponse();
+                httpResponse = httpWR.GetResponse();                
                 System.IO.StreamReader sRead = new System.IO.StreamReader(httpResponse.GetResponseStream());
                 apiResponse = sRead.ReadToEnd();
                 MostRecentResponse = apiResponse;
                 Data = JObject.Parse(apiResponse);
+                LastUpdateForStreamer[username] = apiResponse;
             }
             catch (WebException webEx)
             {
-                Data = JObject.Parse("{\"stream\": null}");
+                Console.WriteLine(String.Format("Problem retrieving user {0}: {1}", username, webEx.Message));
+                if (LastUpdateForStreamer.ContainsKey(username))
+                {
+                    Data = JObject.Parse(LastUpdateForStreamer[username]);
+                    apiResponse = LastUpdateForStreamer[username];
+                    Error = webEx.Message;
+                }
+                Error = webEx.Message;                
+                return "false";
             }
             catch (Exception ex)
             {
-                Data = JObject.Parse("{\"stream\": null}");
+                Console.WriteLine(String.Format("Problem retrieving user {0}: {1}", username, ex.Message));
+                if (LastUpdateForStreamer.ContainsKey(username))
+                {
+                    Data = JObject.Parse(LastUpdateForStreamer[username]);
+                    apiResponse = LastUpdateForStreamer[username];                    
+                }
+                Error = ex.Message;                
                 return "false";
             }
             finally

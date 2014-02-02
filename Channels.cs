@@ -37,9 +37,14 @@ namespace TwitchBot
             }
             if (this.UseBlackList)
             {
+                // default to true if it's only the blacklist
+                if (!this.UseWhiteList)
+                    meetswhitelist = true;
                 foreach (string s in this.BlackList)
                 {
                     if (StreamInfo.game.Contains(s))
+                        meetswhitelist = false;
+                    if (StreamInfo.streamname.Contains(s))
                         meetswhitelist = false;
                 }
             }

@@ -23,7 +23,7 @@ namespace TwitchBot
         public string LiveMessage = "";
         public string ChangeMessage = "";
         public List<string> GlobalBlacklist = new List<string>();
-        public string FileName = "./XMLFile1.xml";
+        public string FileName = "./Configuration.xml";
         public Dictionary<string, TwitchStuff> AllStreamers = new Dictionary<string, TwitchStuff>();
         /// <summary>
         /// List of all server nodes in the configuration file.
@@ -44,6 +44,66 @@ namespace TwitchBot
         public XDocument ConfigDocument = new XDocument();
         public XmlReader ReadConfig;
         public XmlWriter WriteConfig;
+        public bool RemoveUser(string username, Channels ChannelWatch, IIrcMessageTarget target, IIrcMessageSource source, IrcClient ircConnection)
+        {
+            ModifyingConfig = true;
+            bool returnvalue = false;
+            IrcChannel findChannel = null;
+            foreach (IrcChannel ircChannel in ircConnection.Channels)
+            {
+                if (ircChannel.Name == target.Name)
+                {
+                    findChannel = ircChannel;
+                }
+            }
+            if (Utilities.CheckOp(source.Name, findChannel))
+            {
+                try
+                {
+                    Channels Watch = new Channels();
+                    foreach (Channels c in TwitchChannels)
+                    {
+                        if (findChannel.Name == c.ChannelName)
+                        {
+                            Watch = c;
+                        }//if (findChannel.Name == c.ChannelName)
+                    }//foreach (Channels c in TwitchChannels)
+                    Watch.Streamers.Remove(username);
+                    TwitchStuff twitchInfo = new TwitchStuff();
+                    foreach (TwitchStuff huntInfo in Watch.StreamInfo)
+                    {
+                        if (huntInfo.streamername == username)
+                        {
+                            twitchInfo = huntInfo;
+                        }//if (huntInfo.streamername == username)
+                    }//foreach (TwitchStuff huntInfo in Watch.StreamInfo)
+                    Watch.StreamInfo.Remove(twitchInfo);
+                    // config writing
+                    foreach (string s in AllStreamers.Keys)
+                    {
+                        if (s == username)
+                        {
+                            AllStreamers.Remove(s);
+                        }//if (s == username)
+                    }//foreach (string s in AllStreamers.Keys)
+
+                    XElement chanNode = ConfigDocument.Descendants("servers").FirstOrDefault().Descendants("server").FirstOrDefault().Elements("channel").First(x => x.Attribute("id").Value == Watch.ChannelName);
+                    XElement streamercheck = chanNode.Element("streamers").Descendants("streamer").First(x => x.Attribute("value").Value == username);
+                    if (streamercheck != null)
+                        streamercheck.Remove();
+                    
+                    returnvalue = true;
+                    ConfigDocument.Save(FileName);
+                }//try
+                catch (Exception ex)
+                {
+                    returnvalue = false;
+                }//catch
+            }
+            ModifyingConfig = false;
+            return returnvalue;
+        }
+
         public bool AddUser(string username, Channels ChannelWatch, IIrcMessageTarget target, IIrcMessageSource source, IrcClient ircConnection)
         {
             ModifyingConfig = true;
@@ -66,20 +126,20 @@ namespace TwitchBot
                         if (findChannel.Name == c.ChannelName)
                         {
                             Watch = c;
-                        }
-                    }
+                        }//if (findChannel.Name == c.ChannelName)
+                    }//foreach (Channels c in TwitchChannels)
                     // config writing
                     XElement newStreamer = new XElement("streamer");
                     newStreamer.SetAttributeValue("value", username);
                     XElement xElem = ConfigDocument.Descendants("servers").FirstOrDefault().Descendants("server").FirstOrDefault().Elements("channel").First(x => x.Attribute("id").Value == Watch.ChannelName);
                     xElem.Descendants("streamers").FirstOrDefault().Add(newStreamer);
                     TwitchStuff twitchInfo = new TwitchStuff();
-                    twitchInfo.UpdateInfo(username);
+                    twitchInfo.UpdateInfo(username,this);
                     Watch.Streamers.Add(username);
                     Watch.StreamInfo.Add(twitchInfo);
                     returnvalue = true;
                     ConfigDocument.Save(FileName);
-                }
+                }//try
                 catch (Exception ex)
                 {
                     returnvalue = false;
@@ -232,22 +292,17 @@ namespace TwitchBot
                             string twitchid = streamer.Attribute("value").Value.ToString();
                             StreamInfo = new TwitchStuff();
                             Streamers.Add(twitchid);
-                            if (StreamInfo.UpdateInfo(twitchid) != false)
+                            if (StreamInfo.UpdateInfo(twitchid,this) != false)
                             {
-                                
+                                if (StreamInfo.streamerlive == "true")
+                                {
+
+                                }
                             }
                             else
                             {
-                                StreamInfo = new TwitchStuff();
-                                StreamInfo.streamerviewcount = "";
-                                StreamInfo.streamname = "";
-                                StreamInfo.streamername = twitchid;
-                                StreamInfo.lastannounce = new DateTime();
-                                StreamInfo.lastrefresh = DateTime.Now;
-                                StreamInfo.game = "";
-                                StreamInfo.streamerlive = "false";
+                                StreamInfo = new TwitchStuff(twitchid);
                                 Console.WriteLine("Adding offline stream info for: " + StreamInfo.streamername);
-
                             }//else
                             channelMonitor.StreamInfo.Add(StreamInfo);
                             channelMonitor.Streamers.Add(StreamInfo.streamername);

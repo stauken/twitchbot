@@ -7,6 +7,14 @@ namespace TwitchBot
 {
     public class Utilities
     {
+        public static bool IsDebug()
+        {
+            if (System.Diagnostics.Debugger.IsAttached)
+                return true;
+            else
+                return false;
+
+        }
         public static bool CheckOp(string UserNick, IrcChannel Channel)
         {
             foreach (IrcChannelUser user in Channel.Users)
