@@ -12,6 +12,7 @@ TestResults
 *.suo
 *.user
 *.sln.docstates
+[Cc]onfiguration*.xml
 [Cc]onfiguration.xml
 [Xx][Mm][Ll][Ff]ile1.xml
 
