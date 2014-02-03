@@ -100,8 +100,8 @@ namespace TwitchBot
             this.streamname = "";
             this.streamername = "";
             this.lastannounce = DateTime.Now.AddMinutes(-30);
-            this.lastrefresh = DateTime.Now.AddMinutes(-3);
-            this.lastchangeannounce = DateTime.Now.AddMinutes(-3);
+            this.lastrefresh = DateTime.Now.AddMinutes(-30);
+            this.lastchangeannounce = DateTime.Now.AddMinutes(-30);
             this.game = "";
             this.streamerlive = "false";
         }
@@ -111,8 +111,8 @@ namespace TwitchBot
             this.streamname = "";
             this.streamername = twitchid;
             this.lastannounce = DateTime.Now.AddMinutes(-30);
-            this.lastrefresh = DateTime.Now.AddMinutes(-3);
-            this.lastchangeannounce = DateTime.Now.AddMinutes(-3); 
+            this.lastrefresh = DateTime.Now.AddMinutes(-30);
+            this.lastchangeannounce = DateTime.Now.AddMinutes(-30); 
             this.game = "";
             this.streamerlive = "false";
         }

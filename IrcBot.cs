@@ -166,7 +166,7 @@ namespace TwitchBot
                                         streamInfo.lastannounce = DateTime.Now;
                                     }//if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
                                 }
-                                else if (oldInfo.streamerlive == "true" && oldInfo.streamname != streamInfo.streamname && oldInfo.game != streamInfo.game)
+                                else if (streamInfo.streamerlive == "true" && oldInfo.streamname != streamInfo.streamname && oldInfo.game != streamInfo.game)
                                 {
                                     bool changesmeetwhitelist = channel.MeetsWhiteBlackList(streamInfo);
                                     if (changesmeetwhitelist)
