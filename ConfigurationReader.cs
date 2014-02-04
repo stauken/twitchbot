@@ -103,6 +103,65 @@ namespace TwitchBot
             ModifyingConfig = false;
             return returnvalue;
         }
+        public bool SetNotice(string username, Channels ChannelWatch, IIrcMessageTarget target, IIrcMessageSource source, IrcClient ircConnection, bool SetNoticeValue)
+        {
+            ModifyingConfig = true;
+            bool returnvalue = false;
+            IrcChannel findChannel = null;
+            foreach (IrcChannel ircChannel in ircConnection.Channels)
+            {
+                if (ircChannel.Name == target.Name)
+                {
+                    findChannel = ircChannel;
+                }
+            }
+            if (ChannelWatch.Streamers.Contains(username))
+            {
+                try
+                {                                        
+                    TwitchStuff twitchInfo = new TwitchStuff();
+                    foreach (TwitchStuff huntInfo in ChannelWatch.StreamInfo)
+                    {
+                        if (huntInfo.streamername == username)
+                        {
+                            twitchInfo = huntInfo;
+                        }//if (huntInfo.streamername == username)
+                    }//foreach (TwitchStuff huntInfo in Watch.StreamInfo)
+                    XElement chanNode = ConfigDocument.Descendants("servers").FirstOrDefault().Descendants("server").FirstOrDefault().Elements("channel").First(x => x.Attribute("id").Value == ChannelWatch.ChannelName);
+                    XElement streamercheck = chanNode.Element("streamers").Descendants("streamer").First(x => x.Attribute("value").Value == username);
+                    if (streamercheck != null)
+                    {
+                        if (SetNoticeValue)
+                        {
+                            try
+                            {
+                                streamercheck.Attribute("setnotice").SetValue("true");
+                            }
+                            catch { 
+                                streamercheck.Add(new XAttribute("setnotice", "true"));
+                            }
+                            twitchInfo.setnotice = true;
+                        }
+                        else { 
+                            streamercheck.Attribute("setnotice").SetValue("false");
+                            twitchInfo.setnotice = false;
+                        }
+                    }
+                    returnvalue = true;
+                    ConfigDocument.Save(FileName);
+                }//try
+                catch (Exception ex)
+                {
+                    returnvalue = false;
+                }//catch
+            }
+            else
+            {
+                ircConnection.LocalUser.SendNotice(source.Name, "You are not on the streamer list.");
+            }
+            ModifyingConfig = false;
+            return returnvalue;
+        }
 
         public bool AddUser(string username, Channels ChannelWatch, IIrcMessageTarget target, IIrcMessageSource source, IrcClient ircConnection)
         {
@@ -286,12 +345,23 @@ namespace TwitchBot
                     foreach (XElement streamer in channelNode.Elements("streamers").Elements("streamer").ToList())
                     {
                         StreamerNodes.Add(streamer);
+                        
                         test = "";
                         try
-                        {
+                        {                            
                             string twitchid = streamer.Attribute("value").Value.ToString();
-                            StreamInfo = new TwitchStuff();
                             Streamers.Add(twitchid);
+                            bool setnoticevalue = false;
+                            try
+                            {
+                                setnoticevalue = Convert.ToBoolean(streamer.Attribute("setnotice").Value.FirstOrDefault());
+                            }
+                            catch
+                            {
+                                setnoticevalue = false;
+                            }
+                            StreamInfo = new TwitchStuff();
+                            StreamInfo.setnotice = setnoticevalue;
                             if (StreamInfo.UpdateInfo(twitchid,this) != false)
                             {
                                 if (StreamInfo.streamerlive == "true")
@@ -304,6 +374,7 @@ namespace TwitchBot
                                 StreamInfo = new TwitchStuff(twitchid);
                                 Console.WriteLine("Adding offline stream info for: " + StreamInfo.streamername);
                             }//else
+                            
                             channelMonitor.StreamInfo.Add(StreamInfo);
                             channelMonitor.Streamers.Add(StreamInfo.streamername);
                             AllStreamers.Add(StreamInfo.streamername, StreamInfo);

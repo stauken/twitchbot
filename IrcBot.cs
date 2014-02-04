@@ -86,15 +86,16 @@ namespace TwitchBot
             int curcount = ircConnection.Channels.Count;
             foreach (Channels chan in config.TwitchChannels)
             {
-                ircConnection.Channels.Join(chan.ChannelName);
+                Tuple<string, string> chanpass = new Tuple<string, string>(chan.ChannelName, chan.ChannelPassword);
+                ircConnection.Channels.Join(chanpass);
                 while (curcount + 1 > ircConnection.Channels.Count)
                 {
-                    if (started.AddSeconds(15) <= DateTime.Now)
+                    if (started.AddSeconds(15) <= DateTime.Now)                    
                     {
-                        ircConnection.Channels.Join(chan.ChannelName);
+                        ircConnection.Channels.Join(chanpass);
                         started = DateTime.Now;
                     }
-
+                    
                     // wait out joining
                 }
 
@@ -161,7 +162,7 @@ namespace TwitchBot
                                     bool meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
                                     if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
                                     {
-                                        if (meetswhitelist)
+                                        if (meetswhitelist && !streamInfo.setnotice)
                                             ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
                                         streamInfo.lastannounce = DateTime.Now;
                                     }//if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
@@ -180,7 +181,7 @@ namespace TwitchBot
                                             addToList = config.ChangeMessage.Trim();
                                         }//else
                                         addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
-                                        if (streamInfo.lastchangeannounce.AddMinutes(15) < DateTime.Now)
+                                        if (streamInfo.lastchangeannounce.AddMinutes(15) < DateTime.Now && !streamInfo.setnotice)
                                         {
                                             ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
                                             streamInfo.lastchangeannounce = DateTime.Now;
@@ -349,7 +350,6 @@ namespace TwitchBot
             if (livestreams >= 4)
             {
                 announcetochannel = false;
-
             }
             int timecheck = 60;
             if (!announcetochannel)
@@ -377,11 +377,24 @@ namespace TwitchBot
 
                         if (meetswhitelist)
                         {
-                            foundstream = true;
+                            
                             if (announcetochannel)
-                                ircConnection.LocalUser.SendMessage(channel.ChannelName, liveList);//if(announcetochannel)
+                            {   
+                                if (!streamInfo.setnotice)
+                                {
+                                    foundstream = true;
+                                    ircConnection.LocalUser.SendMessage(channel.ChannelName, liveList);
+                                }//if (!streamInfo.setnotice)
+                                else
+                                {
+                                    foundunapprovedstream = true;
+                                }//else
+                            }//if(announcetochannel)
                             else
-                                ircConnection.LocalUser.SendNotice(nick, liveList);//else
+                            {
+                                foundstream = true;
+                                ircConnection.LocalUser.SendNotice(nick, liveList);
+                            }//else
                         }//if (meetswhitelist)
                         else
                         {
@@ -394,7 +407,7 @@ namespace TwitchBot
                 {
                     if (foundunapprovedstream)
                     {
-                        ircConnection.LocalUser.SendMessage(channel.ChannelName, "No one is currently streaming a whitelisted game. Use !liveall to see streams.");
+                        ircConnection.LocalUser.SendMessage(channel.ChannelName, "No one is currently cleared to report on !live. Use !liveall to see streams.");
                     }
                     else
                     {
@@ -447,6 +460,67 @@ namespace TwitchBot
             Console.WriteLine(String.Format("*{0}* {1}", e.Targets[0].Name, e.Text));
         }//public static void LocalUser_MessageSent(object sender, IrcMessageEventArgs e)
 
+        public void SendHelp(string[] cmdargs, IIrcMessageSource source)
+        {
+            List<string> helpMsg = new List<string>();
+            if (cmdargs.Length >= 2)
+            {
+                if (cmdargs.Length >= 3)
+                {
+                    if (cmdargs[2] == "!live")
+                    {
+                        helpMsg.Add("Displays all streamers who are currently watched, live and meet any list requirements. Will send a notice to inform users if there are more than 3 streamers live. Streamers may set themselves to only show when live is sent as a notice by using !setnotice on.");
+                    }
+                    if (cmdargs[2] == "!liveall")
+                    {
+                        helpMsg.Add("Displays all streamers who are currently watched and live. Liveall always reports via notice.");
+                    }
+                    if (cmdargs[2] == "!watching")
+                    {
+                        helpMsg.Add("Displays all users being watched on the current channel. This sends via a notice.");
+                    }
+                    if (cmdargs[2] == "!add")
+                    {
+                        helpMsg.Add("Add a user to the streaming list. Available only to channel ops.");
+                    }
+                    if (cmdargs[2] == "!remove")
+                    {
+                        helpMsg.Add("Remove a user from the streaming list. Available only to channel ops.");
+                    }
+                    if (cmdargs[2] == "!setnotice")
+                    {
+                        helpMsg.Add("use !setnotice ON to make it so that your stream will only announce on NOTICE reports, !setnotice OFF if you want to show on !live and be announced when you go live.");
+                    }
+                }
+                else
+                {
+                    if (cmdargs[1] == "channel")
+                    {
+                        helpMsg.Add("TwitchBot channel commands:");
+                        helpMsg.Add("  !live - !liveall - !watching - !add - !remove - !setnotice");
+                        helpMsg.Add(String.Format("/msg {0} help channel command - get help on an individual command", config.BotInfo.NickName));
+                    }
+                    if (cmdargs[1] == "messages")
+                    {
+                        helpMsg.Add("PM commands:");
+                        helpMsg.Add(String.Format("  /msg {0} live #channel - Gets all live users for a watched channel that meet requirements to be listed.", config.BotInfo.NickName));
+                        helpMsg.Add(String.Format("  /msg {0} liveall #channel - Gets all live users for a watched channel.", config.BotInfo.NickName));
+                        helpMsg.Add(String.Format("  /msg {0} listchannels - Gets all channels being watched.", config.BotInfo.NickName));
+                    }
+                }
+            }
+
+            else
+            {
+                helpMsg.Add("Please use 'help channel' or 'help messages' for commands for channels and private messages.");
+            }
+
+            foreach (string s in helpMsg)
+            {
+                ircConnection.LocalUser.SendNotice(source.Name, s);
+            }//foreach (string s in helpMsg)
+
+        }
         // This is what happens when a privmsg gets received (e.g. someone /msg's the bot)
         public void LocalUser_MessageReceived(object sender, IrcMessageEventArgs e)
         {
@@ -459,25 +533,14 @@ namespace TwitchBot
             }
             else if (cmdargs[0] == "help")
             {
-                List<string> helpMsg = new List<string>();
-                helpMsg.Add("TwitchBot channel commands:");
-                helpMsg.Add("  !live - Retrieves all streaming users who meet any requirements to be shown to the channel.");
-                helpMsg.Add("  !liveall - Retrieves all streaming users on the list, period.");
-                helpMsg.Add("  !add - Ops only, will allow you to add a user to the channel's watchlist.");
-                helpMsg.Add("PM commands:");
-                helpMsg.Add(String.Format("  /msg {0} live #channel - Gets all live users for a watched channel that meet requirements to be listed.", config.BotInfo.NickName));
-                helpMsg.Add(String.Format("  /msg {0} liveall #channel - Gets all live users for a watched channel.", config.BotInfo.NickName));
-                helpMsg.Add(String.Format("  /msg {0} listchannels - Gets all channels being watched.", config.BotInfo.NickName));
-                foreach (string s in helpMsg)
-                {
-                    ircConnection.LocalUser.SendMessage(e.Source.Name, s);
-                }//foreach (string s in helpMsg)
-            }//else if (cmdargs[0] == "help")
+                SendHelp(cmdargs, e.Source);
+            }//else if (cmdargs[0] == "help" )
             else if (cmdargs[0] == "listchannels")
             {
                 foreach (Channels c in config.TwitchChannels)
                 {
-                    ircConnection.LocalUser.SendMessage(e.Source.Name, c.ChannelName);
+                    if (c.Streamers.Count > 0)
+                        ircConnection.LocalUser.SendMessage(e.Source.Name, c.ChannelName);
                 }//foreach (Channels c in config.TwitchChannels)
             }//else if (cmdargs[0] == "listchannels")
             else
@@ -563,7 +626,32 @@ namespace TwitchBot
                     SendLiveList(CurChan, e.Source.Name);
                 }
                 #endregion
-
+                if (e.Text.ToLower().StartsWith("!help"))
+                {
+                    SendHelp(e.Text.Split(' '), e.Source);
+                }
+                if (e.Text.ToLower().StartsWith("!setnotice on ") || e.Text.ToLower().StartsWith("!setnotice off"))
+                {                    
+                    string[] args = e.Text.Split(' ');
+                    if (args.Length >= 3)       
+                    { 
+                        if (e.Text.ToLower().StartsWith("!setnotice on "))
+                        {
+                            if(config.SetNotice(args[2], CurChan, target, e.Source, ircConnection, true))
+                            {
+                                ircConnection.LocalUser.SendNotice(e.Source.Name, "User " + args[2] + " now has their setnotice value set to true.");
+                            }
+                        
+                        }
+                        if (e.Text.ToLower().StartsWith("!setnotice off "))
+                        {
+                            if(config.SetNotice(args[2], CurChan, target, e.Source, ircConnection, false))
+                            {
+                                ircConnection.LocalUser.SendNotice(e.Source.Name, "User " + args[2] + " now has their setnotice value set to false.");
+                            }
+                        }
+                    }
+                }
                 #region Transform
                 if (e.Text.StartsWith(".transform") && LastTransform.AddSeconds(15) < DateTime.Now)
                 {
@@ -599,77 +687,82 @@ namespace TwitchBot
                 #region "Config modifications"
                 if (e.Text.StartsWith("!remove"))
                 {
-                    bool success = true;
-                    string[] users = e.Text.Split(' ');
-                    foreach (string s in users)
+                    if (Utilities.CheckOp(e.Source.Name,ircConnection.Channels.First(x => x.Name == CurChan.ChannelName)))
                     {
-                        bool founduser = false;
-                        if (s != "!remove")
+                        bool success = true;
+                        string[] users = e.Text.Split(' ');
+                        foreach (string s in users)
                         {
-                            while (SweepingChannels)
-                            { }//wait out a channel sweep so we don't modify the collection during it
-                            foreach (string existingUser in CurChan.Streamers)
+                            bool founduser = false;
+                            if (s != "!remove")
                             {
-                                if (s == existingUser)
+                                while (SweepingChannels)
+                                { }//wait out a channel sweep so we don't modify the collection during it
+                                foreach (string existingUser in CurChan.Streamers)
                                 {
-                                    founduser = true;
+                                    if (s == existingUser)
+                                    {
+                                        founduser = true;
+                                    }
+                                }
+                                if (!founduser)
+                                {
+                                    ircConnection.LocalUser.SendMessage(target, "User is not currently being watched.");
+                                }
+                                else if (!config.RemoveUser(s, CurChan, target, e.Source, ircConnection))
+                                {
+                                    success = false;
                                 }
                             }
-                            if (!founduser)
-                            {
-                                ircConnection.LocalUser.SendMessage(target, "User is not currently being watched.");
-                            }
-                            else if (!config.RemoveUser(s, CurChan, target, e.Source, ircConnection))
-                            {
-                                success = false;
-                            }
+                        }
+                        if (success)
+                        {
+                            ircConnection.LocalUser.SendMessage(target, "User(s) successfully removed.");
+                        }
+                        else
+                        {
+                            ircConnection.LocalUser.SendMessage(target, "Not all user(s) were successfully removed.");
                         }
                     }
-                    if (success)
-                    {
-                        ircConnection.LocalUser.SendMessage(target, "User(s) successfully removed.");
-                    }
-                    else
-                    {
-                        ircConnection.LocalUser.SendMessage(target, "Not all user(s) were successfully removed.");
-                    }
-
                 }
                 if (e.Text.StartsWith("!add"))
                 {
-                    bool success = true;
-                    string[] users = e.Text.Split(' ');
-                    foreach (string s in users)
+                    if (Utilities.CheckOp(e.Source.Name,ircConnection.Channels.First(x => x.Name == CurChan.ChannelName)))
                     {
-                        bool founduser = false;
-                        if (s != "!add")
+                        bool success = true;
+                        string[] users = e.Text.Split(' ');
+                        foreach (string s in users)
                         {
-                            while (SweepingChannels)
-                            { }//wait out a channel sweep so we don't modify the collection during it
-                            foreach (string existingUser in CurChan.Streamers)
+                            bool founduser = false;
+                            if (s != "!add")
                             {
-                                if (s == existingUser)
+                                while (SweepingChannels)
+                                { }//wait out a channel sweep so we don't modify the collection during it
+                                foreach (string existingUser in CurChan.Streamers)
                                 {
-                                    founduser = true;
+                                    if (s == existingUser)
+                                    {
+                                        founduser = true;
+                                    }
+                                }
+                                if (founduser)
+                                {
+                                    ircConnection.LocalUser.SendMessage(target, "User already exists in watchlist");
+                                }
+                                else if (!config.AddUser(s, CurChan, target, e.Source, ircConnection))
+                                {
+                                    success = false;
                                 }
                             }
-                            if (founduser)
-                            {
-                                ircConnection.LocalUser.SendMessage(target, "User already exists in watchlist");
-                            }
-                            else if (!config.AddUser(s, CurChan, target, e.Source, ircConnection))
-                            {
-                                success = false;
-                            }
                         }
-                    }
-                    if (success)
-                    {
-                        ircConnection.LocalUser.SendMessage(target, "User(s) successfully added.");
-                    }
-                    else
-                    {
-                        ircConnection.LocalUser.SendMessage(target, "Not all user(s) were successfully added.");
+                        if (success)
+                        {
+                            ircConnection.LocalUser.SendMessage(target, "User(s) successfully added.");
+                        }
+                        else
+                        {
+                            ircConnection.LocalUser.SendMessage(target, "Not all user(s) were successfully added.");
+                        }
                     }
                 }
                 #endregion

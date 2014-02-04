@@ -11,6 +11,7 @@ namespace TwitchBot
         public string streamername;
         public string streamerlive;
         public string game;
+        public bool setnotice;
         public DateTime lastrefresh;
         public DateTime lastannounce;
         public DateTime lastchangeannounce;

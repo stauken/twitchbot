@@ -1,14 +1,41 @@
 ﻿<servers>
   <server id="irc.server.com" port="6667">
     <userinfo>
+      <!--
+        Valid XML keys/values for element <userinfo>
+          nick - IRC Nick for the bot
+          name - IRC Name for the bot
+          needserverpassword  - Set whether or not the account needs a server password to login
+          serverpassword - Set the password to use to login
+          userpassword - Set the password to identify the bot w/ a NICKSERV
+      -->
       <nick>twitchbotdistro</nick>
       <name>twitchbotdistro</name>
       <needsserverpassword>False</needsserverpassword>
       <serverpassword></serverpassword>
       <userpassword></userpassword>
     </userinfo>
-    <channel id="#test-channel1" useblacklist="true" usewhitelist="false">
+    <!--
+      Valid Attributes for element <channel>
+        id = Channel name. Required.
+        useblacklist = true/false, whether to use blacklist items
+        usewhitelist = true/false, whether to use whitelist items
+        password = Channel password. Leave blank/do not add for channels without.
+      Valid elements for element <channel>
+        <streamers> - contains list of streams to watch
+        <whitelist> - whitelisted items. Only checks game.
+          name - Game to pass whitelist.
+        <blacklist> - Blacklisted items. Checks game and stream title.
+          name - Word to check for blacklist.
+        <races> - Races to watch.
+    -->
+    <channel id="#test-channel1" useblacklist="true" usewhitelist="false" password="">
       <streamers>
+        <!--
+          Valid attributes for element <streamer>
+            value = Twitch ID of streamer
+            setnotice = True/false, sets if the user announces publicly or only via notice (SetNotice = true means only via notice)
+        -->
         <streamer value="riotgames" />
         <streamer value="saltybet" />
         <streamer value="spikevegeta" />
@@ -30,8 +57,12 @@
         <game name="Commander Keen" />          
       </blacklist>
       <races>
+        <!--
+          Valid attributes for element <race>
+            name = Race to watch for.
+        -->
         <race name="Grand Theft Auto" />
-      </races>              
+      </races>                    
       <streamannouncement value="$4http://www.twitch.tv/$n $xis now streaming $10$t$x (game: $3$g$x, viewers: $11$v$x) " />
       <liveannouncement value="$4http://www.twitch.tv/$n $xis now streaming $10$t$x (game: $3$g$x, viewers: $11$v$x)" />
       <titlechangeannouncement value="$4http://www.twitch.tv/$n $xhas changed their stream title, now $10$t $x(game: $3$g$x, viewers: $1$v$x)" />
