@@ -23,6 +23,8 @@ namespace TwitchBot
         public string LiveMessage = "";
         public string ChangeMessage = "";
         public List<string> GlobalBlacklist = new List<string>();
+        public string OwnerIdentity = String.Empty;
+        public bool HasOwner = false;
         public string FileName = "./Configuration.xml";
         public Dictionary<string, TwitchStuff> AllStreamers = new Dictionary<string, TwitchStuff>();
         /// <summary>
@@ -215,10 +217,25 @@ namespace TwitchBot
             XElement serversNode = ConfigDocument.Root;
             foreach (XElement serverNode in serversNode.Descendants("server"))
             {
-                ServerNodes.Add(serverNode);
+                ServerNodes.Add(serverNode);                
                 XElement userinfo = serverNode.Descendants("userinfo").FirstOrDefault();
                 BotUsername = userinfo.Descendants("nick").FirstOrDefault().Value;
                 BotRealname = userinfo.Descendants("name").FirstOrDefault().Value;
+                try 
+                { 
+                    OwnerIdentity = userinfo.Descendants("ownerident").FirstOrDefault().Value;
+                }
+                catch
+                {
+                    OwnerIdentity = "";
+                }
+                try { 
+                    HasOwner = Convert.ToBoolean(userinfo.Descendants("hasowner").FirstOrDefault().Value);
+                }
+                catch
+                {
+                    HasOwner = false;
+                }
                 try
                 {
                     UsePassword = Convert.ToBoolean(userinfo.Descendants("needsserverpassword").FirstOrDefault().Value.ToString());

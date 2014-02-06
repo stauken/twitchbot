@@ -15,6 +15,21 @@ namespace TwitchBot
                 return false;
 
         }
+        public static bool CheckOwner(string OwnerIdentity, IrcChannel Channel)
+        { 
+            foreach(IrcChannelUser user in Channel.Users)
+            {                
+                if (user.User.HostName == OwnerIdentity)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
         public static bool CheckOp(string UserNick, IrcChannel Channel)
         {
             foreach (IrcChannelUser user in Channel.Users)
@@ -26,7 +41,7 @@ namespace TwitchBot
                 else if (user.User.NickName == UserNick && (!user.Modes.Contains('o') && !user.Modes.Contains('h')))
                 {
                     return false;
-                }
+                }                
             }//foreach (IrcChannelUser user in Channel.Users)
             return false;
         }//public static bool CheckOp(string UserNick, IrcChannel Channel)

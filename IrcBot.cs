@@ -22,6 +22,7 @@ namespace TwitchBot
         public System.IO.FileStream LogFile;
         public System.IO.FileStream TwitchLog;
         public bool SweepingChannels = false;
+        
         #endregion
         #region "Log stuff"
         public void ConfigureLog()
@@ -58,7 +59,7 @@ namespace TwitchBot
             ircConnection.NetworkInformationReceived += new EventHandler<EventArgs>(ircConnection_NetworkInformationReceived);
             ircConnection.PingReceived += new EventHandler<IrcPingOrPongReceivedEventArgs>(ircConnection_PingReceived);
             ircConnection.PongReceived += new EventHandler<IrcPingOrPongReceivedEventArgs>(ircConnection_PongReceived);
-            ircConnection.ProtocolError += new EventHandler<IrcProtocolErrorEventArgs>(ircConnection_ProtocolError);
+            ircConnection.ProtocolError += new EventHandler<IrcProtocolErrorEventArgs>(ircConnection_ProtocolError);            
             ircConnection.Connect(config.ServerName, 6667, false, config.BotInfo);
         }
         public void LoginLoop()
@@ -94,9 +95,7 @@ namespace TwitchBot
                     {
                         ircConnection.Channels.Join(chanpass);
                         started = DateTime.Now;
-                    }
-                    
-                    // wait out joining
+                    }// wait out joining
                 }
 
                 //SendLiveList(ircConnection.Channels[curcount].Name);
@@ -140,7 +139,6 @@ namespace TwitchBot
                         oldInfo.streamername = streamInfo.streamername;
                         oldInfo.streamname = streamInfo.streamname;
                         oldInfo.game = streamInfo.game;
-
                         try
                         {                            
                             string wasLive = streamInfo.streamerlive;
@@ -160,7 +158,7 @@ namespace TwitchBot
                                     }//else
                                     addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
                                     bool meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
-                                    if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist)
+                                    if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist && streamInfo.LastOffLine.AddMinutes(30) <= DateTime.Now)
                                     {
                                         if (meetswhitelist && !streamInfo.setnotice)
                                             ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
@@ -188,6 +186,10 @@ namespace TwitchBot
                                         }
                                     }//if (changesmeetwhitelist)
                                     streamInfo.lastannounce = DateTime.Now;
+                                }
+                                if (streamInfo.streamerlive == "false" && oldInfo.streamerlive == "true")
+                                {
+                                    streamInfo.LastOffLine = DateTime.Now;
                                 }
                             }                            
 

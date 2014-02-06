@@ -17,6 +17,7 @@ namespace TwitchBot
         public DateTime lastchangeannounce;
         public bool AnnounceAgain = false;
         public string streamerviewcount;
+        public DateTime LastOffLine;
         public bool UpdateInfo(string TwitchName, ConfigurationReader config)
         {            
             bool properlyupdated = true;
@@ -54,7 +55,7 @@ namespace TwitchBot
                             // it appears that twitch has told us this person is not streaming.
                             this.game = "";
                             this.streamname = "";
-                            this.streamerviewcount = "";
+                            this.streamerviewcount = "";                            
                             this.streamerlive = "false"; 
                         }
                         else
@@ -79,7 +80,7 @@ namespace TwitchBot
                         config.AllStreamers[TwitchName].streamname = this.streamname;
                         config.AllStreamers[TwitchName].game = this.game;
                         config.AllStreamers[TwitchName].streamerlive = this.streamerlive;
-                        config.AllStreamers[TwitchName].lastrefresh = DateTime.Now;
+                        config.AllStreamers[TwitchName].lastrefresh = DateTime.Now;                        
                     }
                     else
                     {
@@ -103,6 +104,7 @@ namespace TwitchBot
             this.lastannounce = DateTime.Now.AddMinutes(-30);
             this.lastrefresh = DateTime.Now.AddMinutes(-30);
             this.lastchangeannounce = DateTime.Now.AddMinutes(-30);
+            this.LastOffLine = DateTime.Now.AddMinutes(-60);
             this.game = "";
             this.streamerlive = "false";
         }
@@ -113,7 +115,8 @@ namespace TwitchBot
             this.streamername = twitchid;
             this.lastannounce = DateTime.Now.AddMinutes(-30);
             this.lastrefresh = DateTime.Now.AddMinutes(-30);
-            this.lastchangeannounce = DateTime.Now.AddMinutes(-30); 
+            this.lastchangeannounce = DateTime.Now.AddMinutes(-30);
+            this.LastOffLine = DateTime.Now.AddMinutes(-60);
             this.game = "";
             this.streamerlive = "false";
         }
