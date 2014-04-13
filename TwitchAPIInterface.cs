@@ -45,7 +45,12 @@ namespace TwitchBot
             }
             catch (WebException webEx)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine(e.Message);
+                //Console.WriteLine("ERROR: " + ex.Message);
                 Console.WriteLine(String.Format("Problem retrieving user {0}: {1}", username, webEx.Message));
+                Console.ForegroundColor = ConsoleColor.Gray;
+                
                 if (LastUpdateForStreamer.ContainsKey(username))
                 {
                     Data = JObject.Parse(LastUpdateForStreamer[username]);
@@ -57,7 +62,11 @@ namespace TwitchBot
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine(e.Message);
+                //Console.WriteLine("ERROR: " + ex.Message);
                 Console.WriteLine(String.Format("Problem retrieving user {0}: {1}", username, ex.Message));
+                Console.ForegroundColor = ConsoleColor.Gray;
                 if (LastUpdateForStreamer.ContainsKey(username))
                 {
                     Data = JObject.Parse(LastUpdateForStreamer[username]);

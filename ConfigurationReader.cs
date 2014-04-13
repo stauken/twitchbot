@@ -99,6 +99,9 @@ namespace TwitchBot
                 }//try
                 catch (Exception ex)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR: " + ex.Message);
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     returnvalue = false;
                 }//catch
             }
@@ -155,6 +158,9 @@ namespace TwitchBot
                 catch (Exception ex)
                 {
                     returnvalue = false;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR: " + ex.Message);
+                    Console.ForegroundColor = ConsoleColor.Gray;
                 }//catch
             }
             else
@@ -203,6 +209,9 @@ namespace TwitchBot
                 }//try
                 catch (Exception ex)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR: " + ex.Message);
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     returnvalue = false;
                 }
             }
@@ -242,12 +251,15 @@ namespace TwitchBot
                 }
                 catch (Exception ex)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR: " + ex.Message);
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     UsePassword = false;
                 }//catch (Exception ex)
                 BotInfo.NickName = BotUsername;
                 BotInfo.UserName = BotUsername;
                 BotInfo.RealName = BotRealname;
-                BotInfo.Password = userinfo.Descendants("userpassword").FirstOrDefault().Value;
+                BotInfo.Password = userinfo.Descendants("userpassword").FirstOrDefault().Value;                
                 ServerName = serverNode.Attribute("id").Value;
                 Console.WriteLine("Server pointed to: " + ServerName);
                 List<TwitchStuff> StreamersList = new List<TwitchStuff>();
@@ -256,8 +268,7 @@ namespace TwitchBot
                 string valuecheck = serversNode.Elements("liveannouncement").FirstOrDefault().Value;
                 XElement serversubnode = serversNode.Elements("streamannouncement").FirstOrDefault();
                 BaseMessageStartStreaming = serversubnode.Attribute("value").Value.ToString();
-                ChangeMessage = serversNode.Elements("titlechangeannouncement").FirstOrDefault().Attribute("value").Value.ToString();
-                string test = "";
+                ChangeMessage = serversNode.Elements("titlechangeannouncement").FirstOrDefault().Attribute("value").Value.ToString();                
                 List<XElement> channelNodeElements = new List<XElement>();
                 foreach (XElement channelNode in serverNode.Descendants("channel"))
                 {
@@ -361,9 +372,7 @@ namespace TwitchBot
                     }                    
                     foreach (XElement streamer in channelNode.Elements("streamers").Elements("streamer").ToList())
                     {
-                        StreamerNodes.Add(streamer);
-                        
-                        test = "";
+                        StreamerNodes.Add(streamer);                                                
                         try
                         {                            
                             string twitchid = streamer.Attribute("value").Value.ToString();
@@ -394,10 +403,14 @@ namespace TwitchBot
                             
                             channelMonitor.StreamInfo.Add(StreamInfo);
                             channelMonitor.Streamers.Add(StreamInfo.streamername);
-                            AllStreamers.Add(StreamInfo.streamername, StreamInfo);
+                            if(!AllStreamers.Keys.Contains(StreamInfo.streamername))
+                                AllStreamers.Add(StreamInfo.streamername, StreamInfo);
                         }//try
                         catch (Exception ex)
                         {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("ERROR: " + ex.Message);
+                            Console.ForegroundColor = ConsoleColor.Gray;
                             continue;
                         }//catch (Exception ex)
                     }//foreach (XElement streamer in channelNode.Elements("streamers").Elements("streamer").ToList())

@@ -5,8 +5,9 @@ using System.Text;
 using IrcDotNet;
 namespace TwitchBot
 {
-    public class IrcBot
+    public class IrcBot 
     {
+        
         #region Miscellaneous properties
         public bool debugging = false;
         public bool InSRL = false;
@@ -59,8 +60,8 @@ namespace TwitchBot
             ircConnection.NetworkInformationReceived += new EventHandler<EventArgs>(ircConnection_NetworkInformationReceived);
             ircConnection.PingReceived += new EventHandler<IrcPingOrPongReceivedEventArgs>(ircConnection_PingReceived);
             ircConnection.PongReceived += new EventHandler<IrcPingOrPongReceivedEventArgs>(ircConnection_PongReceived);
-            ircConnection.ProtocolError += new EventHandler<IrcProtocolErrorEventArgs>(ircConnection_ProtocolError);            
-            ircConnection.Connect(config.ServerName, 6667, false, config.BotInfo);
+            ircConnection.ProtocolError += new EventHandler<IrcProtocolErrorEventArgs>(ircConnection_ProtocolError);
+            ircConnection.Connect(config.ServerName, 6667, false, config.BotInfo);            
         }
         public void LoginLoop()
         {
@@ -196,7 +197,9 @@ namespace TwitchBot
                         }
                         catch (Exception ex)
                         {
-
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("ERROR: " + ex.Message);
+                            Console.ForegroundColor = ConsoleColor.Gray;
                         }
                     }
                 }
@@ -249,7 +252,9 @@ namespace TwitchBot
             }//try
             catch (Exception ex)
             {
-
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ERROR: " + ex.Message);
+                Console.ForegroundColor = ConsoleColor.Gray;
             }//catch (Exception ex)
         }//public static void DoTransform(Channels CurChan, string user)
         public void SendAllLiveList(Channels channel, IIrcMessageSource e)
@@ -335,17 +340,29 @@ namespace TwitchBot
             }
             return listmessages;
         }
-        public void SendLiveList(Channels channel, string nick)
+        public void SendLiveList(Channels channel, string nick, string[] args)
         {
             bool foundstream = false;
             bool foundunapprovedstream = false;
             int livestreams = 0;
+            bool hasArgs = (args.Length > 0);
+
+            List<TwitchStuff> filteredStreamInfos = channel.StreamInfo;
+
             foreach (TwitchStuff streamInfo in channel.StreamInfo)
             {
                 if (streamInfo.streamerlive == "true")
                 {
                     if (channel.MeetsWhiteBlackList(streamInfo))
-                        livestreams++;
+                    {
+                        if (hasArgs)
+                        {
+                            if(args.Any(s => streamInfo.game.ToLower().Contains(s.ToLower()) || streamInfo.streamname.ToLower().Contains(s.ToLower())))
+                                livestreams++;
+                        }
+                        else
+                            livestreams++;
+                    }
                 }
             }
             bool announcetochannel = true;
@@ -376,7 +393,12 @@ namespace TwitchBot
                         addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
                         liveList = addToList.Trim();
                         meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
-
+                        if (args.Length > 0)
+                        {
+                            // !LIVE SEARCH FUNCTIONALITY
+                            if (!args.Any(s => streamInfo.game.ToLower().Contains(s.ToLower()) || streamInfo.streamname.ToLower().Contains(s.ToLower())))
+                                meetswhitelist = false;
+                        }
                         if (meetswhitelist)
                         {
                             
@@ -429,7 +451,10 @@ namespace TwitchBot
 
         void ircConnection_ProtocolError(object sender, IrcProtocolErrorEventArgs e)
         {
-            Console.WriteLine(e.Message);
+            
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(e.Message);            
+            Console.ForegroundColor = ConsoleColor.Gray;
             LogWrite(String.Format("IRC Protocol Error: {0}", e.Message));
         }
         // watch for races specifically for speedrunslive and echo them to any channel configured to receive them
@@ -508,6 +533,7 @@ namespace TwitchBot
                         helpMsg.Add(String.Format("  /msg {0} live #channel - Gets all live users for a watched channel that meet requirements to be listed.", config.BotInfo.NickName));
                         helpMsg.Add(String.Format("  /msg {0} liveall #channel - Gets all live users for a watched channel.", config.BotInfo.NickName));
                         helpMsg.Add(String.Format("  /msg {0} listchannels - Gets all channels being watched.", config.BotInfo.NickName));
+                        helpMsg.Add(String.Format("  /msg {0} watching #channel - Gets users being watched on channel.", config.BotInfo.NickName));
                     }
                 }
             }
@@ -574,6 +600,23 @@ namespace TwitchBot
                                 ircConnection.LocalUser.SendMessage(e.Source.Name, s);
                             }
                             break;
+                        case "watching":
+                            string WatchingReport = string.Empty;
+                            foreach (string s in Channel.Streamers)
+                            {
+                                WatchingReport += s + " ";
+                                if (WatchingReport.Length > 250)
+                                { 
+                                    ircConnection.LocalUser.SendMessage(e.Source.Name, WatchingReport);
+                                    WatchingReport = string.Empty;
+                                }
+                            }
+                            if (WatchingReport.Length > 0)
+                            {
+                                ircConnection.LocalUser.SendMessage(e.Source.Name, WatchingReport);
+                                WatchingReport = string.Empty;
+                            }                            
+                            break;
                         default:
                             break;
                     }
@@ -616,7 +659,37 @@ namespace TwitchBot
                     if (target.Name == c.ChannelName)
                         CurChan = c;
                 }//foreach (Channels c in config.TwitchChannels)
+                #region Beta work
+                if (e.Text.StartsWith("!multitwitch"))
+                {
+                    List<string> matchingnames = new List<string>();
+                    string[] args = e.Text.Split(' ');
+                    if (args.Length > 1)
+                    {
+                        for (int i = 1; i < args.Length; i++)
+                        {
+                            var o = CurChan.StreamInfo.Where(x => x.game.ToLower().Contains(args[i].ToLower()) || x.streamname.ToLower().Contains(args[i].ToLower()));
 
+                            foreach (TwitchStuff user in o)                            
+                            {
+                                // do not repeatedly print the name
+                                if(!matchingnames.Contains(user.streamername))
+                                    matchingnames.Add(user.streamername);
+                            }
+                        }
+                    }
+                    if (matchingnames.Count > 1)
+                    {
+
+                        StringBuilder multitwitchannounce = new StringBuilder("http://www.multitwitch.tv/");
+                        foreach(string s in matchingnames)
+                        {
+                            multitwitchannounce.Append(string.Format("{0}/",s));
+                        }
+                        ircConnection.LocalUser.SendMessage(CurChan.ChannelName, multitwitchannounce.ToString());
+                    }
+                }
+                #endregion 
                 #region Lives
 
                 if (e.Text.ToLower().StartsWith("!liveall"))
@@ -625,7 +698,14 @@ namespace TwitchBot
                 }
                 else if (e.Text.ToLower().StartsWith("!live"))
                 {
-                    SendLiveList(CurChan, e.Source.Name);
+                    string[] args = new string[0];
+                    if(e.Text.IndexOf(' ') >= 0)
+                    {
+                        string argstrings = e.Text.Substring(e.Text.IndexOf(' ')+1);
+                        if(argstrings.Length > 0)
+                            args = argstrings.Split(' '); 
+                    }                                                           
+                    SendLiveList(CurChan, e.Source.Name, args);
                 }
                 #endregion
                 if (e.Text.ToLower().StartsWith("!help"))
@@ -667,7 +747,6 @@ namespace TwitchBot
                     }
                 }
                 #endregion Transform
-
                 if (e.Text.StartsWith("!watching"))
                 {
                     StringBuilder sbAssembleWatchList = new StringBuilder();
@@ -738,6 +817,11 @@ namespace TwitchBot
                             bool founduser = false;
                             if (s != "!add")
                             {
+
+                                if(SweepingChannels)
+                                {
+                                    ircConnection.LocalUser.SendNotice(e.Source.Name, "Currently checking twitch API for all users, will add when completed.");
+                                }
                                 while (SweepingChannels)
                                 { }//wait out a channel sweep so we don't modify the collection during it
                                 foreach (string existingUser in CurChan.Streamers)
@@ -749,7 +833,7 @@ namespace TwitchBot
                                 }
                                 if (founduser)
                                 {
-                                    ircConnection.LocalUser.SendMessage(target, "User already exists in watchlist");
+                                    ircConnection.LocalUser.SendNotice(e.Source.Name, "User already exists in watchlist");
                                 }
                                 else if (!config.AddUser(s, CurChan, target, e.Source, ircConnection))
                                 {
@@ -759,11 +843,11 @@ namespace TwitchBot
                         }
                         if (success)
                         {
-                            ircConnection.LocalUser.SendMessage(target, "User(s) successfully added.");
+                            ircConnection.LocalUser.SendNotice(e.Source.Name, "User(s) successfully added.");
                         }
                         else
                         {
-                            ircConnection.LocalUser.SendMessage(target, "Not all user(s) were successfully added.");
+                            ircConnection.LocalUser.SendNotice(e.Source.Name, "Not all user(s) were successfully added.");
                         }
                     }
                 }

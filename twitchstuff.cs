@@ -60,7 +60,7 @@ namespace TwitchBot
                         }
                         else
                         {
-                            string streamname = getTwitch.Data["stream"]["channel"]["status"].ToString();
+                            string streamname = getTwitch.Data["stream"]["channel"]["status"].ToString().Trim('\r','\n');
                             string streamviewers = getTwitch.Data["stream"]["viewers"].ToString();
                             string streamgame = getTwitch.Data["stream"]["game"].ToString();
                             this.streamerviewcount = streamviewers;
@@ -93,6 +93,9 @@ namespace TwitchBot
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ERROR: " + ex.Message);
+                Console.ForegroundColor = ConsoleColor.Gray;
                 return false;
             }
         }

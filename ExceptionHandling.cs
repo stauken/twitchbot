@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 namespace TwitchBot
 {
-    public class ExceptionHandling
+    public class ExceptionHandling 
     {
         public Exception regExcept = null;
         public System.Net.WebException webExcept = null;
