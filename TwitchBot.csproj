@@ -118,6 +118,10 @@
     <Folder Include="bin\Debug\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\work\ircdotnetsrc\currentrelease\IrcDotNet\IrcDotNet.csproj">
+      <Project>{47d551da-96ed-4ef6-96bf-4832059d4700}</Project>
+      <Name>IrcDotNet</Name>
+    </ProjectReference>
     <ProjectReference Include="TwitchBotLibraries\TwitchBotLibraries.csproj">
       <Project>{cb941a0c-c206-4fd1-b777-7f0b9e09a411}</Project>
       <Name>TwitchBotLibraries</Name>
