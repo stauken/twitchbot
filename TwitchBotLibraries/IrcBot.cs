@@ -28,20 +28,19 @@ namespace TwitchBot
         #region "Log stuff"
         public void ConfigureLog()
         {
-            LogFile = System.IO.File.Open("./RawLog.log", System.IO.FileMode.OpenOrCreate);
-            TwitchLog = System.IO.File.Open("./TwitchLog.Log", System.IO.FileMode.OpenOrCreate);
         }//public static void ConfigureLog()
         public void TwitchLogWrite(string Message)
         {
-            Console.WriteLine(Message);
+            System.IO.File.AppendAllText("./TwitchLog.log", Message);
         }//public static void TwitchLogWrite(string Message)
         public void LogWrite(string Message)
         {
-            Console.WriteLine(Message);
+            System.IO.File.AppendAllText("./RawLog.log", Message);
         }//public static void LogWrite(string Message)
         #endregion
         public void Start()
         {
+            AppDomain.CurrentDomain.UnhandledException += HandleExceptions;
             if (Utilities.IsDebug())
             {
                 debugging = true;
@@ -50,6 +49,10 @@ namespace TwitchBot
             config.ParseConfig();
             HandleConnection();
             LoginLoop();
+        }
+        private void HandleExceptions(object sender, UnhandledExceptionEventArgs e)
+        {
+            LogWrite(((Exception)e.ExceptionObject).Message);
         }
         public void HandleConnection()
         {
@@ -61,6 +64,7 @@ namespace TwitchBot
             ircConnection.PingReceived += new EventHandler<IrcPingOrPongReceivedEventArgs>(ircConnection_PingReceived);
             ircConnection.PongReceived += new EventHandler<IrcPingOrPongReceivedEventArgs>(ircConnection_PongReceived);
             ircConnection.ProtocolError += new EventHandler<IrcProtocolErrorEventArgs>(ircConnection_ProtocolError);
+            ircConnection.FloodPreventer = new IrcStandardFloodPreventer(1, 7000);
             ircConnection.Connect(config.ServerName, 6667, false, config.BotInfo);            
         }
         public void LoginLoop()
@@ -159,7 +163,7 @@ namespace TwitchBot
                                     {
                                         addToList = config.LiveMessage.Trim();
                                     }//else
-                                    addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
+                                    addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname, config.ServerName.ToLower().Contains("twitch.tv"));
                                     bool meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
                                     if (streamInfo.lastannounce.AddMinutes(30) <= DateTime.Now && meetswhitelist && streamInfo.LastOffLine.AddMinutes(30) <= DateTime.Now)
                                     {
@@ -181,7 +185,7 @@ namespace TwitchBot
                                         {
                                             addToList = config.ChangeMessage.Trim();
                                         }//else
-                                        addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
+                                        addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname, config.ServerName.ToLower().Contains("twitch.tv"));
                                         if (streamInfo.lastchangeannounce.AddMinutes(15) < DateTime.Now && !streamInfo.setnotice)
                                         {
                                             ircConnection.LocalUser.SendMessage(channel.ChannelName, addToList);
@@ -284,7 +288,7 @@ namespace TwitchBot
                     {
                         addToList = channel.LiveMessage;
                     }
-                    addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
+                    addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname, config.ServerName.ToLower().Contains("twitch.tv"));
                     liveList = addToList.Trim();
                     foundstream = true;
                     ircConnection.LocalUser.SendNotice(e.Name, liveList);
@@ -312,7 +316,7 @@ namespace TwitchBot
                     string addToList = config.LiveMessage;
                     if (channel.LiveMessage != "")
                         addToList = channel.LiveMessage;
-                    addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
+                    addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname, config.ServerName.ToLower().Contains("twitch.tv"));
                     liveList = addToList.Trim();
                     meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
                     if (UseLiveAll)
@@ -396,7 +400,7 @@ namespace TwitchBot
                         string addToList = config.LiveMessage;
                         if (channel.LiveMessage != "")
                             addToList = channel.LiveMessage;//if (channel.LiveMessage != "")
-                        addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname);
+                        addToList = Utilities.TemplateString(addToList, streamInfo.streamername, streamInfo.game, streamInfo.streamerviewcount, streamInfo.streamname, config.ServerName.ToLower().Contains("twitch.tv"));
                         liveList = addToList.Trim();
                         meetswhitelist = channel.MeetsWhiteBlackList(streamInfo);
                         if (args.Length > 0)
@@ -742,10 +746,15 @@ namespace TwitchBot
                     List<MysteryGame> grabgames = new DataAccess().GameList(config.ConnectionString, "mystery");
                     Random getGame = new Random();
                     MysteryGame pulled = grabgames[getGame.Next(0, grabgames.Count - 1)];
+                    foreach (var prop in pulled.GetType().GetProperties())
+                    {
+                        if (String.IsNullOrEmpty(prop.GetValue(pulled,null).ToString()))
+                            prop.SetValue(pulled,"",null);                        
+                    }
                     string gamebroadcast = String.Format("$4{0}$x - Platform: $b{1}$x - Submitter: $b{2}$x - Goal: $b{3}$x - Download: $b{4}$x - $b{5}$x - Tournament Race Result: $b{6}$x", 
                         pulled.name, pulled.platform, pulled.submitter, pulled.goal, pulled.download, 
                         pulled.pastebin, pulled.tournamentraceresult);
-                    gamebroadcast = Utilities.TemplateMysteryGame(gamebroadcast, pulled);
+                    gamebroadcast = Utilities.TemplateMysteryGame(gamebroadcast, pulled, config.ServerName.ToLower().Contains("twitch.tv"));
                     ircConnection.LocalUser.SendMessage(e.Targets[0].Name, gamebroadcast);
                 }
                 #endregion

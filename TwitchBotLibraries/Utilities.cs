@@ -46,28 +46,28 @@ namespace TwitchBot
             return false;
         }//public static bool CheckOp(string UserNick, IrcChannel Channel)
 
-        public static string TemplateString(string addToList, string streamername, string game, string viewercount, string streamname)
+        public static string TemplateString(string addToList, string streamername, string game, string viewercount, string streamname, bool ontwitch)
         {
             addToList = addToList.Replace("\n", "");
             //addToList = addToList.Replace("\\x03", 0x03.ToString());
-            addToList = addToList.Replace("$10", "\x03" + "10");
-            addToList = addToList.Replace("$11", "\x03" + "11");
-            addToList = addToList.Replace("$12", "\x03" + "12");
-            addToList = addToList.Replace("$13", "\x03" + "13");
-            addToList = addToList.Replace("$14", "\x03" + "14");
-            addToList = addToList.Replace("$15", "\x03" + "15");
-            addToList = addToList.Replace("$1", "\x03" + "01");
-            addToList = addToList.Replace("$2", "\x03" + "02");
-            addToList = addToList.Replace("$3", "\x03" + "03");
-            addToList = addToList.Replace("$4", "\x03" + "04");
-            addToList = addToList.Replace("$5", "\x03" + "05");
-            addToList = addToList.Replace("$6", "\x03" + "06");
-            addToList = addToList.Replace("$7", "\x03" + "07");
-            addToList = addToList.Replace("$8", "\x03" + "08");
-            addToList = addToList.Replace("$9", "\x03" + "09");
-            addToList = addToList.Replace("$reset", "\x03\x0f");
-            addToList = addToList.Replace("$b", "\x02");
-            addToList = addToList.Replace("$x", "\x03\x0f");
+            addToList = addToList.Replace("$10", (ontwitch) ? "" : "\x03" + "10");
+            addToList = addToList.Replace("$11", (ontwitch) ? "" : "\x03" + "11");
+            addToList = addToList.Replace("$12", (ontwitch) ? "" : "\x03" + "12");
+            addToList = addToList.Replace("$13", (ontwitch) ? "" : "\x03" + "13");
+            addToList = addToList.Replace("$14", (ontwitch) ? "" : "\x03" + "14");
+            addToList = addToList.Replace("$15", (ontwitch) ? "" : "\x03" + "15");
+            addToList = addToList.Replace("$1", (ontwitch) ? "" : "\x03" + "01");
+            addToList = addToList.Replace("$2", (ontwitch) ? "" : "\x03" + "02");
+            addToList = addToList.Replace("$3", (ontwitch) ? "" : "\x03" + "03");
+            addToList = addToList.Replace("$4", (ontwitch) ? "" : "\x03" + "04");
+            addToList = addToList.Replace("$5", (ontwitch) ? "" : "\x03" + "05");
+            addToList = addToList.Replace("$6", (ontwitch) ? "" : "\x03" + "06");
+            addToList = addToList.Replace("$7", (ontwitch) ? "" : "\x03" + "07");
+            addToList = addToList.Replace("$8", (ontwitch) ? "" : "\x03" + "08");
+            addToList = addToList.Replace("$9", (ontwitch) ? "" : "\x03" + "09");
+            addToList = addToList.Replace("$reset", (ontwitch) ? "" : "\x03\x0f");
+            addToList = addToList.Replace("$b", (ontwitch) ? "" : "\x02");
+            addToList = addToList.Replace("$x", (ontwitch) ? "" : "\x03\x0f");
             addToList = addToList.Replace("$n", streamername);
             addToList = addToList.Replace("$g", game);
             addToList = addToList.Replace("$v", viewercount);
@@ -75,28 +75,29 @@ namespace TwitchBot
 
             return addToList;
         }//public static string TemplateString(string addToList, string streamername, string game, string viewercount, string streamname)
-        public static string TemplateMysteryGame(string addToList, MysteryGame gameobj)
+        public static string TemplateMysteryGame(string addToList, MysteryGame gameobj, bool ontwitch)
         {
             addToList = addToList.Replace("\n", "");
-            //addToList = addToList.Replace("\\x03", 0x03.ToString());
-            addToList = addToList.Replace("$10", "\x03" + "10");
-            addToList = addToList.Replace("$11", "\x03" + "11");
-            addToList = addToList.Replace("$12", "\x03" + "12");
-            addToList = addToList.Replace("$13", "\x03" + "13");
-            addToList = addToList.Replace("$14", "\x03" + "14");
-            addToList = addToList.Replace("$15", "\x03" + "15");
-            addToList = addToList.Replace("$1", "\x03" + "01");
-            addToList = addToList.Replace("$2", "\x03" + "02");
-            addToList = addToList.Replace("$3", "\x03" + "03");
-            addToList = addToList.Replace("$4", "\x03" + "04");
-            addToList = addToList.Replace("$5", "\x03" + "05");
-            addToList = addToList.Replace("$6", "\x03" + "06");
-            addToList = addToList.Replace("$7", "\x03" + "07");
-            addToList = addToList.Replace("$8", "\x03" + "08");
-            addToList = addToList.Replace("$9", "\x03" + "09");
-            addToList = addToList.Replace("$reset", "\x03\x0f");
-            addToList = addToList.Replace("$b", "\x02");
-            addToList = addToList.Replace("$x", "\x03\x0f");
+            //addToList = addToList.Replace("\\x03", 0x03.ToString());            
+
+            addToList = addToList.Replace("$10", (ontwitch) ? "" : "\x03" + "10" );
+            addToList = addToList.Replace("$11", (ontwitch) ? "" : "\x03" + "11");
+            addToList = addToList.Replace("$12", (ontwitch) ? "" : "\x03" + "12");
+            addToList = addToList.Replace("$13", (ontwitch) ? "" : "\x03" + "13");
+            addToList = addToList.Replace("$14", (ontwitch) ? "" : "\x03" + "14");
+            addToList = addToList.Replace("$15", (ontwitch) ? "" : "\x03" + "15");
+            addToList = addToList.Replace("$1", (ontwitch) ? "" : "\x03" + "01");
+            addToList = addToList.Replace("$2", (ontwitch) ? "" : "\x03" + "02");
+            addToList = addToList.Replace("$3", (ontwitch) ? "" : "\x03" + "03");
+            addToList = addToList.Replace("$4", (ontwitch) ? "" : "\x03" + "04");
+            addToList = addToList.Replace("$5", (ontwitch) ? "" : "\x03" + "05");
+            addToList = addToList.Replace("$6", (ontwitch) ? "" : "\x03" + "06");
+            addToList = addToList.Replace("$7", (ontwitch) ? "" : "\x03" + "07");
+            addToList = addToList.Replace("$8", (ontwitch) ? "" : "\x03" + "08");
+            addToList = addToList.Replace("$9", (ontwitch) ? "" : "\x03" + "09");
+            addToList = addToList.Replace("$reset", (ontwitch) ? "" : "\x03\x0f");
+            addToList = addToList.Replace("$b", (ontwitch) ? "" : "\x02");
+            addToList = addToList.Replace("$x", (ontwitch) ? "" : "\x03\x0f");
             addToList = addToList.Replace("$submitter$", gameobj.submitter);
             addToList = addToList.Replace("$game$", gameobj.name);
             addToList = addToList.Replace("$drawdate$", gameobj.drawdate.ToString());
@@ -110,6 +111,7 @@ namespace TwitchBot
             addToList = addToList.Replace("$tournamentraceresult$", gameobj.tournamentraceresult);
             return addToList;
         }//public static string TemplateString(string addToList, string streamername, string game, string viewercount, string streamname)
+
         public static bool PasteBinPass(string pastebin)
         {
             return pastebin.StartsWith("http://pastebin");
