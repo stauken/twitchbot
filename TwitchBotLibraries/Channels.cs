@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Data.SqlClient;
+using System.Data;
 namespace TwitchBot
 {
     public class Channels
@@ -23,6 +24,21 @@ namespace TwitchBot
         public bool UseWhiteList = false;
         public bool UseBlackList = false;
         public DateTime LastLiveAllMessage = DateTime.Now.AddMinutes(-3);
+        public int ChannelID;
+        public bool Mystery = false;
+        public static List<Channels> ConvertDataTable(DataTable dTable)
+        {
+            
+            List<Channels> ReturnedChannels = new List<Channels>();
+            foreach(DataRow row in dTable.Rows)
+            {
+                Channels twitchChannel = new Channels();
+                twitchChannel.ChannelName = row["ChannelName"].ToString();
+                twitchChannel.ChannelID = Convert.ToInt32(row["ChannelID"]);
+                ReturnedChannels.Add(twitchChannel);
+            }
+            return ReturnedChannels;
+        }
         // Check against white/black lists or return true if neither are enabled
         public bool MeetsWhiteBlackList(TwitchStuff StreamInfo)
         {
@@ -53,6 +69,6 @@ namespace TwitchBot
                 meetswhitelist = true;
             }
             return meetswhitelist;
-        }
+        }        
     }
 }

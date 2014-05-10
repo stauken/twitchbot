@@ -14,6 +14,8 @@ namespace TwitchBot
         public string BotUsername = "";
         public string BotRealname = "";
         public string BotPassword = "";
+        public string ConnectionString = "";
+        public bool UseDB = false;
         public Boolean UsePassword = false;
         public Int32 ServerPort = 6667;
         public IrcUserRegistrationInfo BotInfo = new IrcUserRegistrationInfo();
@@ -81,13 +83,10 @@ namespace TwitchBot
                     }//foreach (TwitchStuff huntInfo in Watch.StreamInfo)
                     Watch.StreamInfo.Remove(twitchInfo);
                     // config writing
-                    foreach (string s in AllStreamers.Keys)
+                    if(AllStreamers.Keys.Contains(username))
                     {
-                        if (s == username)
-                        {
-                            AllStreamers.Remove(s);
-                        }//if (s == username)
-                    }//foreach (string s in AllStreamers.Keys)
+                        AllStreamers.Remove(username);
+                    }
 
                     XElement chanNode = ConfigDocument.Descendants("servers").FirstOrDefault().Descendants("server").FirstOrDefault().Elements("channel").First(x => x.Attribute("id").Value == Watch.ChannelName);
                     XElement streamercheck = chanNode.Element("streamers").Descendants("streamer").First(x => x.Attribute("value").Value == username);
@@ -218,7 +217,67 @@ namespace TwitchBot
             ModifyingConfig = false;
             return returnvalue;            
         }
-        
+        public bool SetWhiteList(bool value, Channels ChannelWatch, IIrcMessageTarget target, IIrcMessageSource source, IrcClient ircConnection)
+        {
+            ModifyingConfig = true;
+            bool returnvalue = false;
+            XElement xElem = ConfigDocument.Descendants("servers").FirstOrDefault().Descendants("server").FirstOrDefault().Elements("channel").First(x => x.Attribute("id").Value == ChannelWatch.ChannelName);
+            if (value)
+            {
+                xElem.Attribute("whitelist").Value = "true";
+                ChannelWatch.UseWhiteList = true;
+            }
+            else
+            {
+                xElem.Attribute("whitelist").Value = "false";
+                ChannelWatch.UseWhiteList = false;
+            }
+            returnvalue = true;
+            ConfigDocument.Save(FileName);
+            ModifyingConfig = false;
+            return returnvalue;            
+        }
+        public bool AddWhiteList(string game, Channels ChannelWatch, IIrcMessageTarget target, IIrcMessageSource source, IrcClient ircConnection)
+        {
+            ModifyingConfig = true;
+            bool returnvalue = false;
+            XElement xElem = ConfigDocument.Descendants("servers").FirstOrDefault().Descendants("server").FirstOrDefault().Elements("channel").First(x => x.Attribute("id").Value == ChannelWatch.ChannelName);
+            XElement whiteList = new XElement("whitelist");
+            if(xElem.Descendants("whitelist").Count() > 0)
+            {
+                whiteList = xElem.Descendants("whitelist").FirstOrDefault();
+            }
+            XElement newGame = new XElement("game");
+            newGame.Attribute(game);
+            ChannelWatch.WhiteList.Add(game);
+            returnvalue = true;
+            ConfigDocument.Save(FileName);
+            ModifyingConfig = false;
+            return returnvalue;
+        }
+        public bool ChangeAnnounceMessage(string MsgTitle, string newMsg, Channels ChannelWatch, IIrcMessageTarget target, IIrcMessageSource source, IrcClient ircConnection)
+        {
+            ModifyingConfig = true;
+            bool returnvalue = false;
+            XElement xElem = ConfigDocument.Descendants("servers").FirstOrDefault().Descendants("server").FirstOrDefault().Elements("channel").First(x => x.Attribute("id").Value == ChannelWatch.ChannelName);
+            XElement announce = new XElement(MsgTitle);
+            if (xElem.Descendants(MsgTitle).Count() > 0)
+            {
+                announce = xElem.Descendants(MsgTitle).FirstOrDefault();
+            }            
+            announce.SetValue(newMsg);
+            if (xElem.Descendants(MsgTitle).Count() == 0)
+            {
+                xElem.Add(announce);
+            }
+            ChannelWatch.AnnounceMessage = newMsg;
+            //ChannelWatch.WhiteList.Add(game);
+            returnvalue = true;
+            ConfigDocument.Save(FileName);
+            ModifyingConfig = false;
+            return returnvalue;
+        }
+
         // this is a hot mess, trying to improve it
         public void ParseConfig()
         {
@@ -226,7 +285,20 @@ namespace TwitchBot
             XElement serversNode = ConfigDocument.Root;
             foreach (XElement serverNode in serversNode.Descendants("server"))
             {
-                ServerNodes.Add(serverNode);                
+                ServerNodes.Add(serverNode);
+                try
+                {
+                    string updateToDB = serverNode.Attribute("updatedb").Value;
+                    if (updateToDB == "true")
+                    {
+                        this.ConnectionString = serverNode.Attribute("ConnString").Value;
+                        this.UseDB = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                }
                 XElement userinfo = serverNode.Descendants("userinfo").FirstOrDefault();
                 BotUsername = userinfo.Descendants("nick").FirstOrDefault().Value;
                 BotRealname = userinfo.Descendants("name").FirstOrDefault().Value;
@@ -259,7 +331,8 @@ namespace TwitchBot
                 BotInfo.NickName = BotUsername;
                 BotInfo.UserName = BotUsername;
                 BotInfo.RealName = BotRealname;
-                BotInfo.Password = userinfo.Descendants("userpassword").FirstOrDefault().Value;                
+                //BotInfo.Password = userinfo.Descendants("userpassword").FirstOrDefault().Value;     
+                BotInfo.Password = ServerNodes.Descendants("serverpassword").FirstOrDefault().Value;
                 ServerName = serverNode.Attribute("id").Value;
                 Console.WriteLine("Server pointed to: " + ServerName);
                 List<TwitchStuff> StreamersList = new List<TwitchStuff>();
@@ -272,6 +345,7 @@ namespace TwitchBot
                 List<XElement> channelNodeElements = new List<XElement>();
                 foreach (XElement channelNode in serverNode.Descendants("channel"))
                 {
+
                     List<XElement> StreamerNodes = new List<XElement>();
                     channelNodeElements.Add(channelNode);
                     #region TODO look into better error handling for this shit lol -- Pull channel config values                                        
@@ -291,6 +365,18 @@ namespace TwitchBot
                     }//if (valuecheck != "")
 
                     valuecheck = "";
+                    try
+                    {
+                        valuecheck = channelNode.Attribute("mystery").Value.ToString();
+                    }
+                    catch
+                    {
+                        valuecheck = "";
+                    }
+                    if (valuecheck != "")
+                    {
+                        channelMonitor.Mystery = Convert.ToBoolean(valuecheck);
+                    }
                     try
                     {
                         valuecheck = channelNode.Descendants("streamannouncement").FirstOrDefault().Attribute("value").Value.ToString();
@@ -392,7 +478,7 @@ namespace TwitchBot
                             {
                                 if (StreamInfo.streamerlive == "true")
                                 {
-
+                                    
                                 }
                             }
                             else

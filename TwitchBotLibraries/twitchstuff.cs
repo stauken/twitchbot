@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Data;
 namespace TwitchBot
 {
     public class TwitchStuff
     {
+        public int streamid = 0;
         public string streamname;
         public string streamername;
         public string streamerlive;
@@ -18,6 +19,71 @@ namespace TwitchBot
         public bool AnnounceAgain = false;
         public string streamerviewcount;
         public DateTime LastOffLine;
+        // Not actually used in IRC. This is a placeholder to dictate the link of the streamer to a channel for databinding purposes.
+        public string ChannelName;
+        public int ChannelID;
+
+        public static List<TwitchStuff> ConvertDataTable(DataTable dTable)
+        {
+            List<TwitchStuff> ReturnValue = new List<TwitchStuff>();
+            foreach(DataRow row in dTable.Rows)
+            {
+                TwitchStuff newTwitchStuff = new TwitchStuff();
+                newTwitchStuff.game = row["StreamGame"].ToString();
+                if (Convert.ToInt32(row["StreamOnline"]) == 1)
+                    newTwitchStuff.streamerlive = "true";
+                else
+                    newTwitchStuff.streamerlive = "false";
+                newTwitchStuff.streamid = Convert.ToInt32(row["StreamID"]);
+                newTwitchStuff.streamerviewcount = row["StreamViewerCount"].ToString();
+                newTwitchStuff.streamername = row["StreamerName"].ToString();
+                newTwitchStuff.streamname = row["StreamTitle"].ToString();
+                newTwitchStuff.ChannelName = row["ChannelName"].ToString();
+                newTwitchStuff.ChannelID = Convert.ToInt32(row["ChannelID"]);
+                ReturnValue.Add(newTwitchStuff);
+            }
+            return ReturnValue;
+        }
+        public static List<TwitchStuff> ConvertDataTable(DataTable dTable, string ChannelName)
+        {
+            List<TwitchStuff> ReturnValue = new List<TwitchStuff>();
+            foreach (DataRow row in dTable.Rows)
+            {
+                TwitchStuff newTwitchStuff = new TwitchStuff();
+                newTwitchStuff.game = row["StreamGame"].ToString();
+                if (Convert.ToInt32(row["StreamOnline"]) == 1)
+                    newTwitchStuff.streamerlive = "true";
+                else
+                    newTwitchStuff.streamerlive = "false";
+                newTwitchStuff.streamid = Convert.ToInt32(row["StreamID"]);
+                newTwitchStuff.streamerviewcount = row["StreamViewerCount"].ToString();
+                newTwitchStuff.streamername = row["StreamerName"].ToString();
+                newTwitchStuff.streamname = row["StreamTitle"].ToString();
+                newTwitchStuff.ChannelName = row["ChannelName"].ToString();
+                newTwitchStuff.ChannelID = Convert.ToInt32(row["ChannelID"]);
+                ReturnValue.Add(newTwitchStuff);
+            }
+            return ReturnValue;
+        }
+        public static List<TwitchStuff> ConvertDataTableNoChannel(DataTable dTable)
+        {
+            List<TwitchStuff> ReturnValue = new List<TwitchStuff>();
+            foreach (DataRow row in dTable.Rows)
+            {
+                TwitchStuff newTwitchStuff = new TwitchStuff();
+                newTwitchStuff.game = row["StreamGame"].ToString();
+                if (Convert.ToInt32(row["StreamOnline"]) == 1)
+                    newTwitchStuff.streamerlive = "true";
+                else
+                    newTwitchStuff.streamerlive = "false";
+                newTwitchStuff.streamid = Convert.ToInt32(row["StreamID"]);
+                newTwitchStuff.streamerviewcount = row["StreamViewerCount"].ToString();
+                newTwitchStuff.streamername = row["StreamerName"].ToString();
+                newTwitchStuff.streamname = row["StreamTitle"].ToString();
+                ReturnValue.Add(newTwitchStuff);
+            }
+            return ReturnValue;
+        }
         public bool UpdateInfo(string TwitchName, ConfigurationReader config)
         {            
             bool properlyupdated = true;
