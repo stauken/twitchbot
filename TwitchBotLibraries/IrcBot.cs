@@ -64,7 +64,8 @@ namespace TwitchBot
             ircConnection.PingReceived += new EventHandler<IrcPingOrPongReceivedEventArgs>(ircConnection_PingReceived);
             ircConnection.PongReceived += new EventHandler<IrcPingOrPongReceivedEventArgs>(ircConnection_PongReceived);
             ircConnection.ProtocolError += new EventHandler<IrcProtocolErrorEventArgs>(ircConnection_ProtocolError);
-            ircConnection.FloodPreventer = new IrcStandardFloodPreventer(1, 7000);
+            if (config.ServerName.Contains("twitch.tv"))
+                ircConnection.FloodPreventer = new IrcStandardFloodPreventer(1, 7000);
             ircConnection.Connect(config.ServerName, 6667, false, config.BotInfo);            
         }
         public void LoginLoop()
@@ -741,21 +742,43 @@ namespace TwitchBot
                 }
                 #endregion 
                 #region Mystery
-                if (e.Text.ToLower() == "!gimmegame" && CurChan.Mystery)
+                if (( e.Text.ToLower().StartsWith("!gimmegame ") || e.Text.ToLower() == "!gimmegame" ) && CurChan.Mystery)
                 {
-                    List<MysteryGame> grabgames = new DataAccess().GameList(config.ConnectionString, "mystery");
-                    Random getGame = new Random();
-                    MysteryGame pulled = grabgames[getGame.Next(0, grabgames.Count - 1)];
-                    foreach (var prop in pulled.GetType().GetProperties())
+                    string filter = String.Empty;
+                    List<MysteryGame> grabgames = null;
+                    if (e.Text.ToLower().StartsWith("!gimmegame "))
                     {
-                        if (String.IsNullOrEmpty(prop.GetValue(pulled,null).ToString()))
-                            prop.SetValue(pulled,"",null);                        
+                        filter = e.Text.ToLower().Replace("!gimmegame ", "");
                     }
-                    string gamebroadcast = String.Format("$4{0}$x - Platform: $b{1}$x - Submitter: $b{2}$x - Goal: $b{3}$x - Download: $b{4}$x - $b{5}$x - Tournament Race Result: $b{6}$x", 
-                        pulled.name, pulled.platform, pulled.submitter, pulled.goal, pulled.download, 
-                        pulled.pastebin, pulled.tournamentraceresult);
-                    gamebroadcast = Utilities.TemplateMysteryGame(gamebroadcast, pulled, config.ServerName.ToLower().Contains("twitch.tv"));
-                    ircConnection.LocalUser.SendMessage(e.Targets[0].Name, gamebroadcast);
+                    DataAccess mysteryAccess = new DataAccess();
+                    if (!String.IsNullOrEmpty(filter))
+                    {
+                        grabgames = mysteryAccess.GameList(config.ConnectionString, "mystery",filter);
+                    }
+                    else
+                    {
+                        grabgames = mysteryAccess.GameList(config.ConnectionString, "mystery");
+                    }
+                    Random getGame = new Random();
+                    if (grabgames.Count > 0)
+                    { 
+                        MysteryGame pulled = grabgames[getGame.Next(0, grabgames.Count - 1)];
+                        foreach (var prop in pulled.GetType().GetProperties())
+                        {
+                            if (String.IsNullOrEmpty(prop.GetValue(pulled,null).ToString()))
+                                prop.SetValue(pulled,"",null);                        
+                        }
+                        mysteryAccess.IncrementDrawCount(config.ConnectionString, "mystery", pulled.gameid);
+                        string gamebroadcast = String.Format("$4{0}$x - Platform: $b{1}$x - Submitter: $b{2}$x - Goal: $b{3}$x - Download: $b{4}$x - $b{5}$x - Tournament Race Result: $b{6}$x - Drawn {7}x", 
+                            pulled.name, pulled.platform, pulled.submitter, pulled.goal, pulled.download, 
+                            pulled.pastebin, pulled.tournamentraceresult,(Convert.ToInt32(pulled.draws)+1));
+                        gamebroadcast = Utilities.TemplateMysteryGame(gamebroadcast, pulled, config.ServerName.ToLower().Contains("twitch.tv"));
+                        ircConnection.LocalUser.SendMessage(e.Targets[0].Name, gamebroadcast);                    
+                    }
+                    else
+                    {
+                        ircConnection.LocalUser.SendMessage(e.Targets[0].Name, "No platform found.");                    
+                    }
                 }
                 #endregion
                 #region Lives
@@ -899,15 +922,23 @@ namespace TwitchBot
                             ircConnection.LocalUser.SendNotice(CurChan.ChannelName, "Whitelisted " + game + ".");
                     }
                 }
-                if (e.Text.StartsWith("!liveannouncement"))
+                if (e.Text.StartsWith("!goliveannouncement"))
                 {
-                    if (e.Text == "!liveannouncement")
+                    if (e.Text == "!goliveannouncement")
                     {
-                        ircConnection.LocalUser.SendNotice(CurChan.ChannelName, CurChan.AnnounceMessage);
+                        if (String.IsNullOrEmpty(CurChan.AnnounceMessage))
+                        {
+
+                            ircConnection.LocalUser.SendNotice(CurChan.ChannelName, config.BaseMessageStartStreaming);
+                        }
+                        else
+                        {                        
+                            ircConnection.LocalUser.SendNotice(CurChan.ChannelName, CurChan.AnnounceMessage);
+                        }
                     }
-                    if (e.Text.StartsWith("!liveannouncement "))
+                    if (e.Text.StartsWith("!goliveannouncement "))
                     {
-                        string msg = e.Text.Replace("!liveannouncement ", "");
+                        string msg = e.Text.Replace("!goliveannouncement ", "");
                         if (Utilities.CheckOp(e.Source.Name, ircConnection.Channels.First(x => x.Name == CurChan.ChannelName)))
                         {
                             if (config.ChangeAnnounceMessage("liveannouncement", msg, CurChan, target, e.Source, ircConnection))
@@ -920,7 +951,16 @@ namespace TwitchBot
                 {
                     if (e.Text == "!titlechangeannouncement")
                     {
-                        ircConnection.LocalUser.SendNotice(CurChan.ChannelName, CurChan.AnnounceMessage);
+                        if (String.IsNullOrEmpty(CurChan.ChangedMessage))
+                        {
+
+                            ircConnection.LocalUser.SendNotice(CurChan.ChannelName, config.ChangeMessage);
+                        }
+                        else
+                        {
+                            ircConnection.LocalUser.SendNotice(CurChan.ChannelName, CurChan.ChangedMessage);
+                        }
+
                     }
                     if (e.Text.StartsWith("!titlechangeannouncement "))
                     {
@@ -937,7 +977,14 @@ namespace TwitchBot
                 {
                     if (e.Text == "!streamannouncement")
                     {
-                        ircConnection.LocalUser.SendNotice(CurChan.ChannelName, CurChan.AnnounceMessage);
+                        if (String.IsNullOrEmpty(CurChan.LiveMessage))
+                        {
+                            ircConnection.LocalUser.SendNotice(CurChan.ChannelName, config.LiveMessage);
+                        }
+                        else
+                        {
+                            ircConnection.LocalUser.SendNotice(CurChan.ChannelName, CurChan.LiveMessage);
+                        }
                     }
                     if (e.Text.StartsWith("!streamannouncement "))
                     {

@@ -56,6 +56,61 @@ namespace TwitchBot
             
             return convertedList;            
         }        
+        public List<MysteryGame> GameList(string ConnectionStringValue, string databasename, string filter)
+        {
+            List<MysteryGame> returnValue = new List<MysteryGame>();
+            SqlConnection sqlConn = new SqlConnection(ConnectionStringValue);
+            if (sqlConn.State == ConnectionState.Closed)
+                sqlConn.Open();
+            sqlConn.ChangeDatabase(databasename);
+            SqlCommand spHandler = new SqlCommand("spGames", sqlConn);
+            spHandler.Parameters.AddWithValue("@step", 3);
+            spHandler.Parameters.AddWithValue("@filter", filter);
+            spHandler.CommandType = CommandType.StoredProcedure;
+            SqlDataAdapter daGameHandler = new SqlDataAdapter(spHandler);
+            DataTable dtGameHandler = new DataTable();
+            daGameHandler.Fill(dtGameHandler);
+
+            var convertedList = (from rw in dtGameHandler.AsEnumerable()
+                                 select new MysteryGame()
+                                 {
+                                     gameid = Convert.ToString(rw["gameid"]),
+                                     download = Convert.ToString(rw["download"]),
+                                     drawdate = Convert.ToString(rw["drawdate"]),
+                                     submitter = Convert.ToString(rw["submitter"]),
+                                     name = Convert.ToString(rw["name"]),
+                                     platform = Convert.ToString(rw["platform"]),
+                                     goal = Convert.ToString(rw["goal"]),
+                                     specialrequirements = Convert.ToString(rw["specialrequirements"]),
+                                     tournamentraceresult = Convert.ToString(rw["tournamentraceresult"]),
+                                     notes = Convert.ToString(rw["notes"]),
+                                     draws = Convert.ToString(rw["draws"]),
+                                     pastebin = (Utilities.PasteBinPass(Convert.ToString(rw["pastebin"]))) ? Convert.ToString(rw["pastebin"]) : "pastebin not provided"
+                                 }).ToList();
+
+            return convertedList;   
+        }
+        public bool IncrementDrawCount(string ConnectionStringValue, string databasename, string gameid)
+        {
+            bool returnvalue = true;
+            try
+            { 
+                SqlConnection sqlConn = new SqlConnection(ConnectionStringValue);
+                if (sqlConn.State == ConnectionState.Closed)
+                    sqlConn.Open();
+                sqlConn.ChangeDatabase(databasename);
+                SqlCommand spHandler = new SqlCommand("spGames", sqlConn);
+                spHandler.Parameters.AddWithValue("@step", 2);
+                spHandler.Parameters.AddWithValue("@gameid", gameid);
+                spHandler.CommandType = CommandType.StoredProcedure;
+                spHandler.ExecuteNonQuery();
+            }
+            catch
+            {
+                returnvalue = false;
+            }
+            return returnvalue;
+        }
         public bool UpdateStreamInfo(Dictionary<string,List<TwitchStuff>> updates, string ConnectionStringValue)
         {
             bool success = false;
