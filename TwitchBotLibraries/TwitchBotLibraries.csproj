@@ -55,12 +55,6 @@
     <Compile Include="twitchstuff.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\work\ircdotnetsrc\currentrelease\IrcDotNet\IrcDotNet.csproj">
-      <Project>{47d551da-96ed-4ef6-96bf-4832059d4700}</Project>
-      <Name>IrcDotNet</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

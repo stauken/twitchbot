@@ -1,0 +1,235 @@
+﻿body {
+    background-color:black;
+    color:yellow;
+    font-family:'Armata',sans-serif;
+    font-size:85%;
+    margin:0px;
+    padding:0px;
+    overflow-y:scroll;
+}
+body a {
+    text-decoration:none;
+}
+.OfflineStreamers a
+{
+	color: orange;
+	font-weight:bold;
+
+}
+.OfflineStreamers {
+    padding-top:5px;
+    margin-top:3px;
+}
+h3 {
+    color:#4cff00;
+}
+ul
+{
+    list-style:none;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+.Header{
+    padding:0px;
+    margin:0px;    
+    //background-color:#203014;    
+    vertical-align:central;
+    text-align:center;    
+}
+.Header h1
+{    
+    color:orange;
+}
+.OverallContainer
+{
+    width:1080px;
+    margin-left:auto;
+    margin-right:auto;
+    color:orange;    
+}
+.Gradient     
+{
+    background: rgb(69,72,77); /* Old browsers */
+    background: -moz-linear-gradient(top,  rgba(69,72,77,1) 0%, rgba(0,0,0,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(69,72,77,1)), color-stop(100%,rgba(0,0,0,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(69,72,77,1) 0%,rgba(0,0,0,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(69,72,77,1) 0%,rgba(0,0,0,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(69,72,77,1) 0%,rgba(0,0,0,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(69,72,77,1) 0%,rgba(0,0,0,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#45484d', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
+}
+.ChannelNavigation
+{
+    
+    display:table;
+    width:100%;
+    margin:auto;
+}
+.ChannelNavigation a
+{
+    cursor: pointer;
+    padding:5px 5px 5px 5px;
+    border-radius:4px;
+    min-width:78px;
+    max-width:128px;    
+    border: solid 1px #191818;
+    float:left;
+    margin-right:5px;
+    margin-left:5px;    
+    background: rgb(69,72,77); /* Old browsers */
+    background: -moz-linear-gradient(top,  rgba(69,72,77,1) 0%, rgba(0,0,0,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(69,72,77,1)), color-stop(100%,rgba(0,0,0,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(69,72,77,1) 0%,rgba(0,0,0,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(69,72,77,1) 0%,rgba(0,0,0,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(69,72,77,1) 0%,rgba(0,0,0,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(69,72,77,1) 0%,rgba(0,0,0,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#45484d', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
+    vertical-align:central;
+    text-align:center;
+    color:orange;
+}
+    .ChannelNavigation a:hover {
+        background: rgb(85,85,85); /* Old browsers */
+        background: -moz-linear-gradient(top, rgba(69,72,77,1) 0%, rgba(85,85,85,1) 100%); 
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(69,72,77,1)), color-stop(100%,rgba(85,85,85,1))); 
+        background: -webkit-linear-gradient(top, rgba(69,72,77,1) 0%,rgba(85,85,85,1) 100%);
+        background: -o-linear-gradient(top, rgba(69,72,77,1) 0%,rgba(85,85,85,1) 100%); 
+        background: -ms-linear-gradient(top, rgba(69,72,77,1) 0%,rgba(85,85,85,1) 100%); 
+        background: linear-gradient(to bottom, rgba(69,72,77,1) 0%,rgba(85,85,85,1) 100%);
+    }
+.StreamNavigation {
+    min-width:1080px;
+}
+.IndividualStream {
+    float:left;
+    width:320px;
+    height:200px;
+    display:block;
+    margin-left:8px;
+    margin-right:8px;    
+    margin-top:4px;
+    margin-bottom:4px;
+}
+.IndividualStream a
+{    
+    width:320px;
+    height:200px;
+    border-radius:4px;        
+    display:block;
+    border: 1px solid rgb(69,72,77);
+}
+.TransparentBG
+{
+    background-color: rgba(15, 15, 15, 0.55);
+    height:50px;
+    overflow:hidden;
+}
+.StreamerName {    
+    color:white;
+    font-weight:bold;
+    display:inline-block;
+    min-width:35px;
+    max-height:21px;
+    max-width:320px;
+    overflow:hidden;
+
+}
+.playButton
+{
+    cursor: pointer;
+}
+.viewers {
+    position:absolute;
+    margin-top:-50px;
+    background-color: rgba(0,0,0,0.75);
+    padding: 5px 5px 5px 5px;   
+}
+.viewers2 {
+    position:absolute;
+    margin-top:-50px;
+    background-color: rgba(0,0,0,0.75);
+    padding: 5px 5px 5px 5px;   
+}
+.ViewerCount
+{
+    
+    color:white;
+    font-weight:bold;
+    min-width:45px;  
+    font-size:110%;  
+}
+.reddot {    
+    float:left;    
+	border-radius: 50%;
+	width: 15px;
+	height: 15px; 
+    margin-top:3px;
+	/* width and height can be anything, as long as they're equal */
+    background-color:red;
+    border-color: red;
+}
+/* and (min-width:1080px) */
+@media screen {
+    .stream {
+        min-height:360px;        
+    }    
+    .chat
+    {        
+        min-height:360px;
+    }
+}
+@media screen and (min-width:1280px)  {
+    .stream {
+        min-height:405px;        
+    }    
+    .chat
+    {        
+        min-height:405px;
+    }
+}
+@media screen and (min-width:1680px)  {
+    .stream {
+        min-height:650px;        
+    }    
+    .chat
+    {        
+        min-height:650px;
+    }
+}
+
+.NewContainer
+{    
+    margin-left:25px;
+    margin-right:25px;    
+    padding-bottom:12px;
+}
+.chat {
+    width:35%;
+    float:right;
+    border:none;
+}
+.stream{
+    width:64%;
+}
+.ContainNav {
+    width:960px;
+    margin:auto;
+    display:block;
+}
+.footer a:visited {
+    color: #e12020;
+}
+.footer {
+     width:880px;
+     margin:auto;
+     font-size:75%;
+     text-align:center;
+}
+.footer a {
+    font-weight:bold;
+}
+.selected { 
+    outline: none;
+    border-color: #9ecaed;
+    box-shadow: 0 0 10px #9ecaed;
+}
