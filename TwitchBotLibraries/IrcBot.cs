@@ -236,7 +236,8 @@ namespace TwitchBot
                 if (!String.IsNullOrWhiteSpace(user))
                 {
                     Random randGen = new Random();
-                    int intValue = randGen.Next(1, 7);
+                    int intValue = randGen.Next(50, 840);
+                    intValue = Convert.ToInt32(Math.Round(Convert.ToDecimal(intValue) / Convert.ToDecimal(100)));
                     string message = "";
                     switch (intValue)
                     {
@@ -260,6 +261,9 @@ namespace TwitchBot
                             break;
                         case 7:
                             message = String.Format("\x01" + "ACTION magically change {0} into silly little Bumble Bee!\x01", user);
+                            break;
+                        case 8:
+                            message = String.Format("\x01" + "ACTION turn {0} into big fat Walrus!!\x01", user);
                             break;
                         default:
                             message = String.Format("\x01" + "ACTION magically change {0} into silly little Bumble Bee!\x01", user);
@@ -351,6 +355,35 @@ namespace TwitchBot
             }
             return listmessages;
         }
+        public void SendTournamentInfo(Channels channel)
+        {
+            if (channel.InfoCommands)
+            {
+                ircConnection.LocalUser.SendMessage(channel.ChannelName, "Please go to http://mystery.beatthega.me/ for more information about the tournament.");
+            }
+        }
+        public void SendCompetitors(Channels channel)
+        {
+            if (channel.InfoCommands)
+            {
+                ircConnection.LocalUser.SendMessage(channel.ChannelName, String.Format("The current contestants are: http://www.twitch.tv/{0} vs http://www.twitch.tv/{1}", channel.Competitor1, channel.Competitor2));
+            }
+        }
+        public void SetCompetitors(Channels channel, string message, string nick, IrcChannel ircChannel)
+        {
+            if (channel.InfoCommands)
+            {
+                if(Utilities.CheckOp(nick, ircChannel))
+                {
+                    message = message.Replace("!setmatch ", "");
+                    string[] vs = message.Split(' ');
+                    channel.Competitor1 = vs[0];
+                    channel.Competitor2 = vs[1];
+                    ircConnection.LocalUser.SendMessage(channel.ChannelName, "Competitors set.");
+                }
+            }
+        }
+        
         public void SendLiveList(Channels channel, string nick, string[] args)
         {
             bool foundstream = false;
@@ -664,12 +697,16 @@ namespace TwitchBot
             foreach (IIrcMessageTarget target in e.Targets)
             {
 
+                // Get channel for commands
                 Channels CurChan = null;
                 foreach (Channels c in config.TwitchChannels)
                 {
                     if (target.Name.ToLower() == c.ChannelName.ToLower())
                         CurChan = c;
                 }//foreach (Channels c in config.TwitchChannels)
+                
+                IrcChannel CurIrcChan = ircConnection.Channels.First(x => x.Name == CurChan.ChannelName);
+                
                 #region Beta work
                 if (e.Text.StartsWith("!viewercount"))
                 {
@@ -685,6 +722,19 @@ namespace TwitchBot
                     if (viewertotal > 0)
                     {
                         ircConnection.LocalUser.SendMessage(CurChan.ChannelName, String.Format("There are {0} total viewers watching channels on the {1} watch list.", viewertotal, CurChan.ChannelName));
+                    }
+                }
+                if (e.Text.StartsWith("!viewercountall"))
+                {
+                    int viewertotal = 0;
+                    foreach (TwitchStuff tstuff in CurChan.StreamInfo)
+                    {
+                        int tempcount = Convert.ToInt32(tstuff.streamerviewcount);
+                        viewertotal = viewertotal + tempcount;
+                    }
+                    if (viewertotal > 0)
+                    {
+                        ircConnection.LocalUser.SendMessage(CurChan.ChannelName, String.Format("There are {0} total viewers watching channels on the watch lists.", viewertotal));
                     }
                 }
                 if (e.Text.StartsWith("!multitwitch"))
@@ -741,6 +791,10 @@ namespace TwitchBot
                     }
                 }
                 #endregion 
+
+                
+                
+                
                 #region Mystery
                 if (( e.Text.ToLower().StartsWith("!gimmegame ") || e.Text.ToLower() == "!gimmegame" ) && CurChan.Mystery)
                 {
@@ -780,12 +834,25 @@ namespace TwitchBot
                         ircConnection.LocalUser.SendMessage(e.Targets[0].Name, "No platform found.");                    
                     }
                 }
+                if (e.Text.ToLower().StartsWith("!setmatch ") && CurChan.Mystery)
+                {
+                    this.SetCompetitors(CurChan, e.Text, e.Source.Name, CurIrcChan);
+                }
+                if (e.Text.ToLower() == "!mtinfo")
+                {
+                    this.SendTournamentInfo(CurChan);
+                }
+                if (e.Text.ToLower() == "!players")
+                {
+                    this.SendCompetitors(CurChan);
+                }
                 #endregion
+                
+                
                 #region Lives
-
                 if (e.Text.ToLower().StartsWith("!liveall"))
                 {
-                    SendAllLiveList(CurChan, e.Source);
+                    this.SendAllLiveList(CurChan, e.Source);
                 }
                 else if (e.Text.ToLower().StartsWith("!live"))
                 {
@@ -799,6 +866,10 @@ namespace TwitchBot
                     SendLiveList(CurChan, e.Source.Name, args);
                 }
                 #endregion
+
+
+                #region "Misc other commands"
+
                 if (e.Text.ToLower().StartsWith("!help"))
                 {
                     SendHelp(e.Text.Split(' '), e.Source);
@@ -825,19 +896,11 @@ namespace TwitchBot
                         }
                     }
                 }
-                #region Transform
-                if (e.Text.StartsWith(".transform"))
-                {
-                    if (e.Text == ".transform" || e.Text == ".transform ")
-                    {
-                        DoTransform(CurChan, e.Source.Name);
-                    }
-                    else
-                    {
-                        DoTransform(CurChan, e.Text.Replace(".transform ", ""));
-                    }
-                }
-                #endregion Transform
+
+
+                
+
+                // Watchlist name report
                 if (e.Text.StartsWith("!watching"))
                 {
                     StringBuilder sbAssembleWatchList = new StringBuilder();
@@ -856,6 +919,28 @@ namespace TwitchBot
                         sbAssembleWatchList.Clear();                        
                     }//if (sbAssembleWatchList.Length > 0)
                 }//if (e.Text.StartsWith("!watching"))
+                #endregion
+
+
+                #region Transform
+                if (e.Text.StartsWith(".transform"))
+                {
+                    if (e.Text == ".transform" || e.Text == ".transform ")
+                    {
+                        DoTransform(CurChan, e.Source.Name);
+                    }
+                    else
+                    {
+                        string user = e.Text.Replace(".transform ", "");
+                        if (user != config.BotInfo.NickName)
+                            DoTransform(CurChan, user);
+                        else
+                            DoTransform(CurChan, e.Source.Name);
+                    }
+                }
+                #endregion Transform
+
+
                 #region "Config modifications"
                 if (e.Text.StartsWith("!remove "))
                 {

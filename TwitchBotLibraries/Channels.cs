@@ -11,13 +11,13 @@ namespace TwitchBot
         public List<string> Streamers = new List<string>();
         public List<TwitchStuff> StreamInfo = new List<TwitchStuff>();
         public DateTime LastLiveAnnouncement = DateTime.Now.AddMinutes(-3);
-        public string ChannelName = "";
+        public string ChannelName = string.Empty;
         public int ChannelIndex = 0;
         public List<string> ChannelRaces = new List<string>();
-        public string ChannelPassword = "";
-        public string AnnounceMessage = "";
-        public string ChangedMessage = "";
-        public string LiveMessage = "";
+        public string ChannelPassword = string.Empty;
+        public string AnnounceMessage = string.Empty;
+        public string ChangedMessage = string.Empty;
+        public string LiveMessage = string.Empty;
         public uint SendDelay = 0;
         public List<string> WhiteList = new List<string>();
         public List<string> BlackList = new List<string>();
@@ -26,6 +26,9 @@ namespace TwitchBot
         public DateTime LastLiveAllMessage = DateTime.Now.AddMinutes(-3);
         public int ChannelID;
         public bool Mystery = false;
+        public bool InfoCommands = false;
+        public string Competitor1 = string.Empty;
+        public string Competitor2 = string.Empty;
         public static List<Channels> ConvertDataTable(DataTable dTable)
         {
             

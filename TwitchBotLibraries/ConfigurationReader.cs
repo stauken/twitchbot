@@ -222,15 +222,23 @@ namespace TwitchBot
             ModifyingConfig = true;
             bool returnvalue = false;
             XElement xElem = ConfigDocument.Descendants("servers").FirstOrDefault().Descendants("server").FirstOrDefault().Elements("channel").First(x => x.Attribute("id").Value == ChannelWatch.ChannelName);
-            if (value)
+            if (xElem.Attributes("usewhitelist") == null)
             {
-                xElem.Attribute("whitelist").Value = "true";
-                ChannelWatch.UseWhiteList = true;
+                XAttribute whiteList = new XAttribute("usewhitelist", value.ToString());
+                xElem.Add(whiteList);
             }
             else
             {
-                xElem.Attribute("whitelist").Value = "false";
-                ChannelWatch.UseWhiteList = false;
+                if (value)
+                {
+                    xElem.Attribute("usewhitelist").SetValue("true");
+                    ChannelWatch.UseWhiteList = true;
+                }
+                else
+                {
+                    xElem.Attribute("usewhitelist").SetValue("false");
+                    ChannelWatch.UseWhiteList = false;
+                }
             }
             returnvalue = true;
             ConfigDocument.Save(FileName);
@@ -247,8 +255,14 @@ namespace TwitchBot
             {
                 whiteList = xElem.Descendants("whitelist").FirstOrDefault();
             }
+            else
+            {
+                xElem.Add(whiteList);
+            }
             XElement newGame = new XElement("game");
-            newGame.Attribute(game);
+            XAttribute newGameAttr = new XAttribute("name", game);
+            newGame.Add(newGameAttr);
+            whiteList.Add(newGame);
             ChannelWatch.WhiteList.Add(game);
             returnvalue = true;
             ConfigDocument.Save(FileName);
@@ -367,7 +381,19 @@ namespace TwitchBot
                     valuecheck = "";
                     try
                     {
-                        valuecheck = channelNode.Attribute("mystery").Value.ToString();
+                        valuecheck = channelNode.Attribute("useinfo").Value.ToString();
+                    }
+                    catch
+                    {
+                        valuecheck = "";
+                    }
+                    if (valuecheck != "")
+                    {
+                        channelMonitor.InfoCommands = Convert.ToBoolean(valuecheck);
+                    }
+                    try
+                    {
+                        valuecheck = channelNode.Attribute("").Value.ToString();
                     }
                     catch
                     {
@@ -377,6 +403,7 @@ namespace TwitchBot
                     {
                         channelMonitor.Mystery = Convert.ToBoolean(valuecheck);
                     }
+
                     try
                     {
                         valuecheck = channelNode.Descendants("streamannouncement").FirstOrDefault().Attribute("value").Value.ToString();
