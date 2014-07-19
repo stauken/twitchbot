@@ -75,11 +75,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Configuration.distro.xml" />
-    <None Include="Configuration.xml">
+    <Content Include="Configuration.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <Content Include="IrcDotNet.dll" />
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Newtonsoft.Json.dll" />
     <Content Include="sampleresponse.js" />
   </ItemGroup>
@@ -118,7 +117,7 @@
     <Folder Include="bin\Debug\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\work\ircdotnetsrc\currentrelease\IrcDotNet\IrcDotNet.csproj">
+    <ProjectReference Include="IrcDotNetLibrary\IrcDotNet.csproj">
       <Project>{47d551da-96ed-4ef6-96bf-4832059d4700}</Project>
       <Name>IrcDotNet</Name>
     </ProjectReference>

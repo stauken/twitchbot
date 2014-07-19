@@ -35,7 +35,7 @@
     <NoWarn>1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\IrcDotNet.snk</AssemblyOriginatorKeyFile>
@@ -96,9 +96,6 @@
     <Compile Include="TextUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\IrcDotNet.snk">
-      <Link>IrcDotNet.snk</Link>
-    </None>
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup />

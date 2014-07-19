@@ -56,13 +56,13 @@
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\work\ircdotnetsrc\currentrelease\IrcDotNet\IrcDotNet.csproj">
+    <Content Include="DB Scheme\db.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IrcDotNetLibrary\IrcDotNet.csproj">
       <Project>{47d551da-96ed-4ef6-96bf-4832059d4700}</Project>
       <Name>IrcDotNet</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="DB Scheme\db.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

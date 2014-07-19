@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitchBot", "TwitchBot.csproj", "{976379BC-0FBC-440D-8213-2BC792037D5F}"
 EndProject
@@ -11,6 +11,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Web UI", "http://localhost:
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		ProjectReferences = "{cb941a0c-c206-4fd1-b777-7f0b9e09a411}|TwitchBotLibraries.dll;{47D551DA-96ED-4EF6-96BF-4832059D4700}|IrcDotNet.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50568"
 		Debug.AspNetCompiler.PhysicalPath = "Web UI\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50568\"
@@ -28,7 +29,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Web UI", "http://localhost:
 		SlnRelativePath = "Web UI\"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IrcDotNet", "..\..\..\..\..\work\ircdotnetsrc\currentrelease\IrcDotNet\IrcDotNet.csproj", "{47D551DA-96ED-4EF6-96BF-4832059D4700}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IrcDotNet", "IrcDotNetLibrary\IrcDotNet.csproj", "{47D551DA-96ED-4EF6-96BF-4832059D4700}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
